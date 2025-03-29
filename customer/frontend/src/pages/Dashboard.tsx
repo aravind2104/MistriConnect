@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { MainLayout } from "@/components/MainLayout";
 import { BookingCard } from "@/components/BookingCard";
 import { mockBookings } from "@/data/mockData";
 
 const Dashboard = () => {
-  const { toast } = useToast();
   const [bookings, setBookings] = useState(mockBookings);
 
   const filterBookings = (status: string) => {
@@ -22,10 +21,7 @@ const Dashboard = () => {
       )
     );
     
-    toast({
-      title: "Booking Cancelled",
-      description: "Your booking has been cancelled successfully",
-    });
+    toast("Your booking has been cancelled successfully");
   };
 
   return (

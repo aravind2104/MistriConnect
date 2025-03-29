@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { MistriLogo } from "@/components/MistriLogo";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -28,28 +27,17 @@ const Register = () => {
     
     // Basic validation
     if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
     
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
+      toast.error("Passwords do not match");
       return;
     }
     
     // Mock registration success
-    toast({
-      title: "Success",
-      description: "Account created successfully! Redirecting to login...",
-    });
+    toast.success("Account created successfully! Redirecting to login...");
     
     // Redirect to login after a short delay
     setTimeout(() => {

@@ -27,7 +27,7 @@ interface FilterState {
 }
 
 const Search = () => {
-  const [handymen, setHandymen] = useState(mockHandymen);
+  //const [handymen, setHandymen] = useState(mockHandymen);
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     category: "",

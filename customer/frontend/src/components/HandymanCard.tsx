@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Handyman } from "@/types/types";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,6 @@ interface HandymanCardProps {
 
 export const HandymanCard = ({ handyman }: HandymanCardProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [showDetails, setShowDetails] = useState(false);
   const [isFavorite, setIsFavorite] = useState(handyman.isFavorite || false);
   const [bookingDetails, setBookingDetails] = useState({
@@ -36,20 +35,15 @@ export const HandymanCard = ({ handyman }: HandymanCardProps) => {
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
-    toast({
-      title: isFavorite ? "Removed from favorites" : "Added to favorites",
-      description: isFavorite
+    toast( isFavorite
         ? `${handyman.name} has been removed from your favorites`
         : `${handyman.name} has been added to your favorites`,
-    });
+   );
   };
 
   const handleBookingSubmit = () => {
     // In a real app, this would send the booking request to the API
-    toast({
-      title: "Booking Request Sent",
-      description: `Your booking request with ${handyman.name} has been sent successfully.`,
-    });
+    toast(`Your booking request with ${handyman.name} has been sent successfully.`);
     
     // Navigate to dashboard after booking
     setTimeout(() => {

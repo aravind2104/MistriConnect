@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Booking } from "@/types/types";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface BookingCardProps {
   booking: Booking;
@@ -12,7 +12,6 @@ interface BookingCardProps {
 }
 
 export const BookingCard = ({ booking, showRating = false, onCancel }: BookingCardProps) => {
-  const { toast } = useToast();
   const [rating, setRating] = useState(booking.rating || 0);
   
   const statusColors = {
@@ -24,10 +23,7 @@ export const BookingCard = ({ booking, showRating = false, onCancel }: BookingCa
   
   const handleRating = (newRating: number) => {
     setRating(newRating);
-    toast({
-      title: "Rating Submitted",
-      description: `You rated this service ${newRating} stars.`,
-    });
+    toast(`You rated this service ${newRating} stars.`);
   };
   
   const formatDate = (dateString: string) => {
