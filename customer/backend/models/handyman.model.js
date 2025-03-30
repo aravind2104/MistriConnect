@@ -36,4 +36,3 @@ const HandymanSchema = new mongoose.Schema({
 })
 const Handyman = mongoose.model('Handyman', HandymanSchema);
 export default Handyman;
-
