@@ -15,11 +15,6 @@ const BookingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    slot: {
-        type: String,
-        required: true,
-        enum: ['FN', 'AN']
-    },
     serviceType:{
         type:String,
         required:true
