@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
 const workerSchema = new mongoose.Schema({
+    name:{
+        type:String,
+        required:true,
+    },
     username: {
         type: String,
         required: true,
@@ -22,7 +26,7 @@ const workerSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    Area:{
+    area:{
         type:String,
         required:true
     },
