@@ -19,10 +19,14 @@ const HandymanSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    serviceType:{
-        type:String,
-        required:true
-    },
+    serviceType:
+        [{
+            serviceType:{
+            type:String,
+            required:true,
+            enum: ['Plumber', 'Electrician', 'Carpenter', 'Mason', 'Painter', 'Gardener']
+        }
+        }],
     Area:{
         type:String,
         required:true
@@ -31,8 +35,17 @@ const HandymanSchema = new mongoose.Schema({
         date: {
             type: Date,
             required: true
+        },
+        slot:{
+            type: String,
+            required: true,
+            enum:['FN','AN']
         }
     }],
+    rating: {
+        type: Number,
+        default: 0
+    },
 })
 const Handyman = mongoose.model('Handyman', HandymanSchema);
 export default Handyman;
