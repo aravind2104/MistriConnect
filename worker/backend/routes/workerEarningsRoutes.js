@@ -1,9 +1,10 @@
 import express from "express";
-import { getEarningsByMonth, getJobsForMonth } from "../controllers/workerEarningsController.js";
+import { getAllEarnings, getEarningsByMonth, getJobsForMonth } from "../controllers/workerEarningsController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
 const router = express.Router();
 
+router.get("/get-all",protectRoute,getAllEarnings)
 // Route to get total earnings and job count for a month
 router.get("/:month", protectRoute, getEarningsByMonth);
 

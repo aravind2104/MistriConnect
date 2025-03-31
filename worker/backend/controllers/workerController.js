@@ -137,3 +137,31 @@ export const rejectJobRequest = async (req, res) => {
     }
 };
 
+export const deleteAvailability = async (req, res) => {
+    try {
+        const { day, startTime, endTime } = req.body;
+        const workerId = req.worker.id; // Get worker ID from authenticated user
+
+        if (!day || !startTime || !endTime) {
+            return res.status(400).json({ message: "Invalid request data." });
+        }
+
+        // Find worker and update availability by removing the specified time slot
+        const worker = await Worker.findById(workerId);
+        if (!worker) {
+            return res.status(404).json({ message: "Worker not found." });
+        }
+
+        worker.availability[day] = worker.availability[day].filter(
+            (slot) => !(slot.startTime === startTime && slot.endTime === endTime)
+        );
+
+        await worker.save();
+
+        res.status(200).json({ message: "Availability slot removed successfully." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+

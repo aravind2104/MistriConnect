@@ -1,382 +1,245 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import axios from 'axios';
+import { HardHat } from 'lucide-react';
+
+interface Availability {
+  [key: string]: { startTime: string; endTime: string }[];
+}
+
+interface WorkerProfileData {
+  name: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  serviceType: string;
+  area: string;
+  availability: Availability;
+  bio?: string;
+}
 
 const WorkerProfile = () => {
-// Personal details state
-const [personalDetails, setPersonalDetails] = useState({
-fullName: 'John Doe',
-email: 'john.doe@example.com',
-phone: '(555) 123-4567',
-location: 'New York, NY',
-address: '123 Main St, Apt 4B',
-city: 'New York',
-state: 'NY',
-zip: '10001',
-});
+  const [profileData, setProfileData] = useState<WorkerProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editableFields, setEditableFields] = useState({
+    phoneNumber: '',
+    area: '',
+    serviceType: '' // Added serviceType to editable fields
+  });
 
-// Work details state
-const [workDetails, setWorkDetails] = useState({
-specialties: 'Plumbing, Electrical, Carpentry',
-experience: '5 years',
-hourlyRate: '50',
-workingHoursStart: '09:00',
-workingHoursEnd: '17:00',
-workingDays: 'Monday to Friday',
-bio: 'Professional handyman with over 5 years of experience in residential and commercial repairs.',
-});
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/auth/profile', {
+          withCredentials: true
+        });
+        setProfileData(response.data);
+        setEditableFields({
+          phoneNumber: response.data.phoneNumber,
+          area: response.data.area,
+          serviceType: response.data.serviceType // Initialize with current serviceType
+        });
+        setLoading(false);
+      } catch (error) {
+        toast.error('Failed to load profile data');
+        console.error(error);
+        setLoading(false);
+      }
+    };
 
-// Account settings state
-const [accountSettings, setAccountSettings] = useState({
-currentPassword: '',
-newPassword: '',
-confirmPassword: '',
-emailNotifications: true,
-smsNotifications: true,
-appNotifications: true,
-});
+    fetchProfile();
+  }, []);
 
-const handlePersonalDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-const { name, value } = e.target;
-setPersonalDetails(prev => ({
-...prev,
-[name]: value,
-}));
-};
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditableFields(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-const handleWorkDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-const { name, value } = e.target;
-setWorkDetails(prev => ({
-...prev,
-[name]: value,
-}));
-};
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.put('http://localhost:5000/api/auth/profile', {
+        phoneNumber: editableFields.phoneNumber,
+        area: editableFields.area,
+        serviceType: editableFields.serviceType // Include serviceType in submission
+      }, {
+        withCredentials: true
+      });
 
-const handleAccountSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-const { name, value, type, checked } = e.target;
-setAccountSettings(prev => ({
-...prev,
-[name]: type === 'checkbox' ? checked : value,
-}));
-};
+      toast.success("Your profile has been updated.");
+      // Refresh data
+      const response = await axios.get('http://localhost:5000/api/auth/profile', {
+        withCredentials: true
+      });
+      setProfileData(response.data);
+    } catch (error) {
+      toast.error("Failed to update profile");
+      console.error(error);
+    }
+  };
 
-const handlePersonalDetailsSubmit = (e: React.FormEvent) => {
-e.preventDefault();
-toast( "Your personal details have been saved.");
-};
+  const formatAvailability = (availability: Availability) => {
+    return Object.entries(availability).map(([day, slots]) => (
+      <div key={day} className="mb-2">
+        <h4 className="capitalize font-medium text-gray-700">{day}</h4>
+        {slots.length > 0 ? (
+          <ul className="ml-4">
+            {slots.map((slot, index) => (
+              <li key={index} className="text-gray-600">
+                {slot.startTime} - {slot.endTime}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="ml-4 text-gray-500">Not available</p>
+        )}
+      </div>
+    ));
+  };
 
-const handleWorkDetailsSubmit = (e: React.FormEvent) => {
-e.preventDefault();
-toast("Your work details have been saved.");
-};
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 flex items-center justify-center">
+        <p>Loading profile data...</p>
+      </div>
+    );
+  }
 
-const handleAccountSettingsSubmit = (e: React.FormEvent) => {
-e.preventDefault();
-if (accountSettings.newPassword !== accountSettings.confirmPassword) {
-toast("Please ensure your passwords match.");
-return;
-}
-toast("Your account settings have been saved.");
-};
+  if (!profileData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 flex items-center justify-center">
+        <p>Failed to load profile data</p>
+      </div>
+    );
+  }
 
-return (
-<div className="min-h-screen bg-gray-50 py-8">
-<div className="container px-4 mx-auto">
-<div className="flex items-center justify-between mb-6">
-<h1 className="text-2xl font-bold text-gray-900">Worker Profile</h1>
-<Link to="/worker/dashboard">
-<Button variant="outline">Back to Dashboard</Button>
-</Link>
-</div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <div className="flex items-center mb-6">
+          <HardHat className="h-10 w-10 text-blue-600 mr-3" />
+          <h1 className="text-2xl font-bold text-gray-900">Worker Profile</h1>
+        </div>
 
-<Tabs defaultValue="personal" className="w-full">
-<TabsList className="grid w-full grid-cols-3">
-<TabsTrigger value="personal">Personal Details</TabsTrigger>
-<TabsTrigger value="work">Work Details</TabsTrigger>
-<TabsTrigger value="account">Account Settings</TabsTrigger>
-</TabsList>
+        <div className="flex justify-end mb-6">
+          <Link to="/worker/dashboard">
+            <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
 
-<TabsContent value="personal">
-<Card>
-<CardHeader>
-<CardTitle>Personal Details</CardTitle>
-<CardDescription>Update your personal information</CardDescription>
-</CardHeader>
-<CardContent>
-<form onSubmit={handlePersonalDetailsSubmit} className="space-y-4">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="space-y-2">
-<Label htmlFor="fullName">Full Name</Label>
-<Input 
-id="fullName" 
-name="fullName" 
-value={personalDetails.fullName}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="email">Email</Label>
-<Input 
-id="email" 
-name="email" 
-type="email" 
-value={personalDetails.email}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="phone">Phone</Label>
-<Input 
-id="phone" 
-name="phone" 
-value={personalDetails.phone}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="location">Location</Label>
-<Input 
-id="location" 
-name="location" 
-value={personalDetails.location}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="address">Address</Label>
-<Input 
-id="address" 
-name="address" 
-value={personalDetails.address}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="city">City</Label>
-<Input 
-id="city" 
-name="city" 
-value={personalDetails.city}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="state">State</Label>
-<Input 
-id="state" 
-name="state" 
-value={personalDetails.state}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="zip">ZIP Code</Label>
-<Input 
-id="zip" 
-name="zip" 
-value={personalDetails.zip}
-onChange={handlePersonalDetailsChange}
-/>
-</div>
-</div>
-<Button type="submit" className="mt-6">Save Changes</Button>
-</form>
-</CardContent>
-</Card>
-</TabsContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Personal Information Card */}
+          <Card className="bg-white rounded-xl shadow-md">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-3 border-b">
+              <CardTitle>Personal Information</CardTitle>
+            </div>
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label>Full Name</Label>
+                    <Input 
+                      value={profileData.name}
+                      readOnly
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Username</Label>
+                    <Input 
+                      value={profileData.username}
+                      readOnly
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input 
+                      value={profileData.email}
+                      readOnly
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input 
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={editableFields.phoneNumber}
+                      onChange={handleFieldChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="area">Service Area</Label>
+                    <Input 
+                      id="area"
+                      name="area"
+                      value={editableFields.area}
+                      onChange={handleFieldChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="serviceType">Service Type</Label>
+                    <Input 
+                      id="serviceType"
+                      name="serviceType"
+                      value={editableFields.serviceType}
+                      onChange={handleFieldChange}
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="mt-4 bg-blue-600 hover:bg-blue-700">
+                  Save Changes
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-<TabsContent value="work">
-<Card>
-<CardHeader>
-<CardTitle>Work Details</CardTitle>
-<CardDescription>Update your professional information</CardDescription>
-</CardHeader>
-<CardContent>
-<form onSubmit={handleWorkDetailsSubmit} className="space-y-4">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="space-y-2">
-<Label htmlFor="specialties">Specialties</Label>
-<Input 
-id="specialties" 
-name="specialties" 
-value={workDetails.specialties}
-onChange={handleWorkDetailsChange}
-placeholder="e.g., Plumbing, Electrical, Carpentry"
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="experience">Experience</Label>
-<Input 
-id="experience" 
-name="experience" 
-value={workDetails.experience}
-onChange={handleWorkDetailsChange}
-placeholder="e.g., 5 years"
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
-<Input 
-id="hourlyRate" 
-name="hourlyRate" 
-type="number"
-value={workDetails.hourlyRate}
-onChange={handleWorkDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="workingDays">Working Days</Label>
-<Input 
-id="workingDays" 
-name="workingDays" 
-value={workDetails.workingDays}
-onChange={handleWorkDetailsChange}
-placeholder="e.g., Monday to Friday"
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="workingHoursStart">Working Hours Start</Label>
-<Input 
-id="workingHoursStart" 
-name="workingHoursStart" 
-type="time"
-value={workDetails.workingHoursStart}
-onChange={handleWorkDetailsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="workingHoursEnd">Working Hours End</Label>
-<Input 
-id="workingHoursEnd" 
-name="workingHoursEnd" 
-type="time"
-value={workDetails.workingHoursEnd}
-onChange={handleWorkDetailsChange}
-/>
-</div>
-</div>
-<div className="space-y-2">
-<Label htmlFor="bio">Bio/Description</Label>
-<Textarea 
-id="bio" 
-name="bio" 
-value={workDetails.bio}
-onChange={handleWorkDetailsChange}
-placeholder="Tell customers about your skills and experience"
-rows={5}
-/>
-</div>
-<Button type="submit" className="mt-6">Save Changes</Button>
-</form>
-</CardContent>
-</Card>
-</TabsContent>
+          {/* Availability Card */}
+          <Card className="bg-white rounded-xl shadow-md">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-3 border-b">
+              <div className="flex justify-between items-center">
+                <CardTitle>Your Availability</CardTitle>
+                <Link to="/worker/setavailability">
+                  <Button variant="outline" size="sm" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                    Edit Availability
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <CardContent className="p-6">
+              {profileData.availability ? (
+                formatAvailability(profileData.availability)
+              ) : (
+                <p className="text-gray-600">No availability set</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-<TabsContent value="account">
-<Card>
-<CardHeader>
-<CardTitle>Account Settings</CardTitle>
-<CardDescription>Update your account preferences</CardDescription>
-</CardHeader>
-<CardContent>
-<form onSubmit={handleAccountSettingsSubmit} className="space-y-6">
-<div className="space-y-4">
-<h3 className="text-lg font-medium">Change Password</h3>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div className="space-y-2">
-<Label htmlFor="currentPassword">Current Password</Label>
-<Input 
-id="currentPassword" 
-name="currentPassword" 
-type="password"
-value={accountSettings.currentPassword}
-onChange={handleAccountSettingsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="newPassword">New Password</Label>
-<Input 
-id="newPassword" 
-name="newPassword" 
-type="password"
-value={accountSettings.newPassword}
-onChange={handleAccountSettingsChange}
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="confirmPassword">Confirm Password</Label>
-<Input 
-id="confirmPassword" 
-name="confirmPassword" 
-type="password"
-value={accountSettings.confirmPassword}
-onChange={handleAccountSettingsChange}
-/>
-</div>
-</div>
-</div>
-
-<div className="space-y-4">
-<h3 className="text-lg font-medium">Notification Settings</h3>
-<div className="space-y-2">
-<div className="flex items-center space-x-2">
-<input 
-type="checkbox" 
-id="emailNotifications" 
-name="emailNotifications"
-checked={accountSettings.emailNotifications}
-onChange={handleAccountSettingsChange}
-className="rounded text-tool-blue focus:ring-tool-blue"
-/>
-<Label htmlFor="emailNotifications">Email Notifications</Label>
-</div>
-<p className="text-sm text-gray-500">Receive new job alerts and updates via email</p>
-</div>
-<div className="space-y-2">
-<div className="flex items-center space-x-2">
-<input 
-type="checkbox" 
-id="smsNotifications" 
-name="smsNotifications"
-checked={accountSettings.smsNotifications}
-onChange={handleAccountSettingsChange}
-className="rounded text-tool-blue focus:ring-tool-blue"
-/>
-<Label htmlFor="smsNotifications">SMS Notifications</Label>
-</div>
-<p className="text-sm text-gray-500">Receive text message alerts for urgent jobs</p>
-</div>
-<div className="space-y-2">
-<div className="flex items-center space-x-2">
-<input 
-type="checkbox" 
-id="appNotifications" 
-name="appNotifications"
-checked={accountSettings.appNotifications}
-onChange={handleAccountSettingsChange}
-className="rounded text-tool-blue focus:ring-tool-blue"
-/>
-<Label htmlFor="appNotifications">App Notifications</Label>
-</div>
-<p className="text-sm text-gray-500">Receive push notifications in the mobile app</p>
-</div>
-</div>
-
-<Button type="submit" className="mt-6">Save Settings</Button>
-</form>
-</CardContent>
-</Card>
-</TabsContent>
-</Tabs>
-</div>
-</div>
-);
+        {/* Bio Card */}
+        {profileData.bio && (
+          <Card className="mt-6 bg-white rounded-xl shadow-md">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-3 border-b">
+              <CardTitle>About You</CardTitle>
+            </div>
+            <CardContent className="p-6">
+              <p className="text-gray-700">{profileData.bio}</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default WorkerProfile;

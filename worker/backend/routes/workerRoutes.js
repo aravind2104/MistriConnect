@@ -1,5 +1,5 @@
 import express from "express";
-import { setAvailability } from "../controllers/workerController.js";
+import { deleteAvailability, setAvailability } from "../controllers/workerController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 import { 
     getJobRequests, 
@@ -22,5 +22,8 @@ router.put("/:id/accept", protectRoute, acceptJobRequest);
 
 // Reject a job request
 router.put("/:id/reject", protectRoute, rejectJobRequest);
+
+router.delete("/availability", protectRoute, deleteAvailability);
+
 
 export default router;

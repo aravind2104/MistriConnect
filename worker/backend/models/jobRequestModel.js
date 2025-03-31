@@ -7,7 +7,9 @@ const jobRequestSchema = new mongoose.Schema({
     date: Date,
     time: String,
     status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
-    price: Number
+    price: Number,
+    rating: { type: Number, min: 1, max: 5 }, // Optional rating field
+    customerReview: { type: String } // Optional customer review field
 });
 
 const JobRequest = mongoose.model('JobRequest', jobRequestSchema);

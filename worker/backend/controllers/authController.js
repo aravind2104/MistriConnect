@@ -56,9 +56,9 @@ export const loginWorker = async (req, res) => {
         }
 
         // Generate token and set cookie
-        generateTokenAndSetCookie(worker, res);
+        const token=generateTokenAndSetCookie(worker, res);
 
-        res.status(200).json({ message: "Login successful", worker });
+        res.status(200).json({ message: "Login successful", worker,token });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -69,4 +69,36 @@ export const loginWorker = async (req, res) => {
 export const logoutWorker = (req, res) => {
     res.cookie('jwt', '', { httpOnly: true, expires: new Date(0) });
     res.status(200).json({ message: 'Logged out successfully' });
+};
+
+
+export const updateWorkerProfile = async (req, res) => {
+    try {
+        const { phoneNumber, area, serviceType } = req.body;
+        
+        // Validate required fields
+        if (!phoneNumber || !area || !serviceType) {
+            return res.status(400).json({ message: 'Phone number, area, and service type are required' });
+        }
+
+        // Update the worker profile
+        const updatedWorker = await Worker.findByIdAndUpdate(
+            req.worker._id,
+            { 
+                phoneNumber,
+                area,
+                serviceType 
+            },
+            { new: true, runValidators: true }
+        ).select('-password -earnings'); // Exclude sensitive fields
+
+        if (!updatedWorker) {
+            return res.status(404).json({ message: 'Worker not found' });
+        }
+
+        res.status(200).json(updatedWorker);
+    } catch (error) {
+        console.error('Error updating worker profile:', error);
+        res.status(500).json({ message: 'Server error while updating profile' });
+    }
 };
