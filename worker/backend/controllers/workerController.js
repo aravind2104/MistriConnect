@@ -9,12 +9,12 @@ import Earnings from "../models/earningsModel.js";
 // @access  Private (Authenticated Worker)
 export const setAvailability = async (req, res) => {
     try {
-        const { day, startTime, endTime } = req.body;
-        const workerId = req.worker.id;  // From JWT token
+        const { date, slot } = req.body;
+        const workerId = req.worker.id; // From JWT token
 
         // Validate input
-        if (!day || !startTime || !endTime) {
-            return res.status(400).json({ message: "Day, startTime, and endTime are required" });
+        if (!date || !slot) {
+            return res.status(400).json({ message: "Date and slot are required" });
         }
 
         const worker = await Worker.findById(workerId);
@@ -22,11 +22,26 @@ export const setAvailability = async (req, res) => {
             return res.status(404).json({ message: "Worker not found" });
         }
 
-        // Update the availability
-        worker.availability[day] = [{ startTime, endTime }];
+        // Check if the slot is valid
+        const validSlots = ["forenoon", "afternoon"];
+        if (!validSlots.includes(slot)) {
+            return res.status(400).json({ message: "Invalid slot. Choose 'forenoon' or 'afternoon'." });
+        }
+
+        // Prevent duplicate unavailability entries
+        const isAlreadyUnavailable = worker.availability.some(
+            (entry) => entry.date === date && entry.slot === slot
+        );
+
+        if (isAlreadyUnavailable) {
+            return res.status(400).json({ message: "Slot already marked as unavailable for this date." });
+        }
+
+        // Add the new unavailability entry
+        worker.availability.push({ date, slot });
         await worker.save();
 
-        res.status(200).json({ message: "Availability updated", availability: worker.availability });
+        res.status(200).json({ message: "Unavailability updated", availability: worker.availability });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

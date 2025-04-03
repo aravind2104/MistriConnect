@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { HardHat } from 'lucide-react';
+import { Calendar, Clock, HardHat } from 'lucide-react';
 
-interface Availability {
-  [key: string]: { startTime: string; endTime: string }[];
+interface Unavailability {
+  date: string;
+  slot: string;
 }
 
 interface WorkerProfileData {
@@ -19,7 +20,7 @@ interface WorkerProfileData {
   phoneNumber: string;
   serviceType: string;
   area: string;
-  availability: Availability;
+  availability: Unavailability[];
   bio?: string;
 }
 
@@ -29,7 +30,7 @@ const WorkerProfile = () => {
   const [editableFields, setEditableFields] = useState({
     phoneNumber: '',
     area: '',
-    serviceType: '' // Added serviceType to editable fields
+    serviceType: ''
   });
 
   // Fetch profile data
@@ -43,7 +44,7 @@ const WorkerProfile = () => {
         setEditableFields({
           phoneNumber: response.data.phoneNumber,
           area: response.data.area,
-          serviceType: response.data.serviceType // Initialize with current serviceType
+          serviceType: response.data.serviceType
         });
         setLoading(false);
       } catch (error) {
@@ -70,13 +71,12 @@ const WorkerProfile = () => {
       await axios.put('http://localhost:5000/api/auth/profile', {
         phoneNumber: editableFields.phoneNumber,
         area: editableFields.area,
-        serviceType: editableFields.serviceType // Include serviceType in submission
+        serviceType: editableFields.serviceType
       }, {
         withCredentials: true
       });
 
       toast.success("Your profile has been updated.");
-      // Refresh data
       const response = await axios.get('http://localhost:5000/api/auth/profile', {
         withCredentials: true
       });
@@ -87,23 +87,29 @@ const WorkerProfile = () => {
     }
   };
 
-  const formatAvailability = (availability: Availability) => {
-    return Object.entries(availability).map(([day, slots]) => (
-      <div key={day} className="mb-2">
-        <h4 className="capitalize font-medium text-gray-700">{day}</h4>
-        {slots.length > 0 ? (
-          <ul className="ml-4">
-            {slots.map((slot, index) => (
-              <li key={index} className="text-gray-600">
-                {slot.startTime} - {slot.endTime}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="ml-4 text-gray-500">Not available</p>
-        )}
-      </div>
-    ));
+  const formatUnavailability = (unavailability: Unavailability[]) => {
+    if (unavailability.length === 0) {
+      return <p className="text-gray-600">No unavailable slots.</p>;
+    }
+  
+    return (
+      <ul className="space-y-3">
+        {unavailability.map((entry, index) => (
+          <li key={index} className="flex items-start gap-3 text-gray-700">
+            <div className="flex-shrink-0 p-2 bg-blue-50 rounded-full">
+              <Calendar className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="font-medium">{entry.date}</p>
+              <p className="text-sm text-gray-500 flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {entry.slot}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   if (loading) {
@@ -150,28 +156,19 @@ const WorkerProfile = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label>Full Name</Label>
-                    <Input 
-                      value={profileData.name}
-                      readOnly
-                    />
+                    <Input value={profileData.name} readOnly />
                   </div>
                   <div className="space-y-2">
                     <Label>Username</Label>
-                    <Input 
-                      value={profileData.username}
-                      readOnly
-                    />
+                    <Input value={profileData.username} readOnly />
                   </div>
                   <div className="space-y-2">
                     <Label>Email</Label>
-                    <Input 
-                      value={profileData.email}
-                      readOnly
-                    />
+                    <Input value={profileData.email} readOnly />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input 
+                    <Input
                       id="phoneNumber"
                       name="phoneNumber"
                       value={editableFields.phoneNumber}
@@ -180,7 +177,7 @@ const WorkerProfile = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="area">Service Area</Label>
-                    <Input 
+                    <Input
                       id="area"
                       name="area"
                       value={editableFields.area}
@@ -189,7 +186,7 @@ const WorkerProfile = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="serviceType">Service Type</Label>
-                    <Input 
+                    <Input
                       id="serviceType"
                       name="serviceType"
                       value={editableFields.serviceType}
@@ -204,24 +201,20 @@ const WorkerProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Availability Card */}
+          {/* Unavailable or Booked Slots Card */}
           <Card className="bg-white rounded-xl shadow-md">
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-3 border-b">
               <div className="flex justify-between items-center">
-                <CardTitle>Your Availability</CardTitle>
+                <CardTitle>Unavailable or Booked Slots</CardTitle>
                 <Link to="/worker/setavailability">
                   <Button variant="outline" size="sm" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                    Edit Availability
+                    Edit Slots
                   </Button>
                 </Link>
               </div>
             </div>
             <CardContent className="p-6">
-              {profileData.availability ? (
-                formatAvailability(profileData.availability)
-              ) : (
-                <p className="text-gray-600">No availability set</p>
-              )}
+              {formatUnavailability(profileData.availability)}
             </CardContent>
           </Card>
         </div>
