@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+import { ThemeProvider } from "./components/ThemeProvider";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLayout from "./components/AdminLayout";
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
+import WorkersList from "./pages/WorkersList";
+import WorkerProfile from "./pages/WorkerProfile";
+import WorkerRegistration from "./pages/WorkerRegistration";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
 
-export default App
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider defaultTheme="light">
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/workers" element={<WorkersList />} />
+                  <Route path="/workers/:id" element={<WorkerProfile />} />
+                  <Route path="/workers/register" element={<WorkerRegistration />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
+              </Route>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+);
+
+export default App;

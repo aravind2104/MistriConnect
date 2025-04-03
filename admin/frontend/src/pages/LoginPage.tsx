@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { MistriLogo } from "@/components/MistriLogo";
 
-const Login = () => {
+const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,15 +17,28 @@ const Login = () => {
       toast.error("Please enter email and password");
       return;
     }
-
-    // Mock login check
+  
     if (email === "user@example.com" && password === "123") {
+      const adminUser = {
+        id: "admin-1",
+        name: "Admin User",
+        email: email,
+      };
+  
+      try {
+        localStorage.setItem("mistri-admin", JSON.stringify(adminUser));
+        console.log("Stored in localStorage:", localStorage.getItem("mistri-admin"));
+      } catch (error) {
+        console.error("localStorage error:", error);
+      }
+  
       toast.success("Login successful! Redirecting...");
       setTimeout(() => navigate("/dashboard"), 2000);
     } else {
       toast.error("Invalid email or password");
     }
   };
+  
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
@@ -70,18 +83,9 @@ const Login = () => {
             </Button>
           </div>
         </CardContent>
-
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-center w-full">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Register here
-            </Link>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );
 };
 
-export default Login;
+export default LoginPage;
