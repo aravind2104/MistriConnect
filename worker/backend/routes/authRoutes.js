@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerWorker, logoutWorker, loginWorker, updateWorkerProfile, forgotPassword, resetPassword } from '../controllers/authController.js';
+import { logoutWorker, loginWorker, updateWorkerProfile, forgotPassword, resetPassword } from '../controllers/authController.js';
 import protectRoute from '../middlewares/protectRoute.js';
 
 const router = express.Router();
