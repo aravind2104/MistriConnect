@@ -11,7 +11,8 @@ import {
   UserCircle,
   X,
   ChevronRight,
-  HardHat
+  HardHat,
+  Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +35,7 @@ interface JobRequest {
   time: string;
   status: 'pending' | 'accepted' | 'completed' | 'rejected';
   price: number;
+  slot: string;
   __v?: number;
 }
 
@@ -302,12 +304,14 @@ const WorkerDashboard = () => {
                             <p className="text-sm text-gray-600 mt-1">{job.customerId.email}</p>
                           </div>
                           <div>
-                            <h4 className="text-sm font-medium text-gray-700">Date & Time</h4>
+                            <h4 className="text-sm font-medium text-gray-700">Date & Slot</h4>
                             <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
                               <Calendar className="h-4 w-4" />
                               <span>{new Date(job.date).toLocaleDateString()}</span>
                               <Clock className="h-4 w-4 ml-2" />
                               <span>{job.time}</span>
+                              <Tag className="h-4 w-4 ml-2" />
+                              <span className="capitalize">{job.slot}</span> {/* Displays slot with first letter capitalized */}
                             </div>
                           </div>
                         </div>
@@ -317,6 +321,7 @@ const WorkerDashboard = () => {
                         </div>
                       </div>
                     </CardContent>
+
                     {job.status === "pending" && (
                       <CardFooter className="flex justify-between bg-gray-50 px-6 py-4 border-t">
                         <Button 

@@ -88,14 +88,35 @@ export const acceptJobRequest = async (req, res) => {
             return res.status(400).json({ message: "Job request is not pending" });
         }
 
+        // Extract job details
+        const jobDate = jobRequest.date; // Already stored in "YYYY-MM-DD" format
+        const slot = jobRequest.slot; // Either "forenoon" or "afternoon"
+
+        // Fetch worker details
+        const worker = await Worker.findById(req.worker.id);
+        if (!worker) {
+            return res.status(404).json({ message: "Worker not found" });
+        }
+
+        // Check if worker is already booked for the same slot
+        const isAlreadyBooked = worker.availability.some(
+            (entry) => entry.date === jobDate && entry.slot === slot
+        );
+
+        if (isAlreadyBooked) {
+            return res.status(400).json({ message: "Worker is already booked for this slot!" });
+        }
+
         // Mark job as accepted
         jobRequest.status = "accepted";
         await jobRequest.save();
 
-        // Add job to earnings
-        const jobDate = new Date(jobRequest.date);
-        const monthYear = jobDate.toLocaleString("default", { month: "long", year: "numeric" });
+        // Add job slot to worker availability
+        worker.availability.push({ date: jobDate, slot });
+        await worker.save();
 
+        // Add job to earnings
+        const monthYear = new Date(jobDate).toLocaleString("default", { month: "long", year: "numeric" });
         let earnings = await Earnings.findOne({ workerId: req.worker.id, month: monthYear });
 
         if (!earnings) {
@@ -112,11 +133,17 @@ export const acceptJobRequest = async (req, res) => {
 
         await earnings.save();
 
-        res.status(200).json({ message: "Job request accepted and added to earnings", jobRequest });
+        res.status(200).json({
+            message: "Job request accepted and added to earnings",
+            jobRequest,
+            updatedAvailability: worker.availability
+        });
+
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
 
 // @desc    Reject a job request
 // @route   PUT /api/job-requests/:id/reject
