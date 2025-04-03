@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { MistriLogo } from "@/components/MistriLogo";
@@ -83,15 +83,6 @@ const LoginPage = () => {
             </Button>
           </div>
         </CardContent>
-
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-center w-full">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Register here
-            </Link>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );

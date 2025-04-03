@@ -45,4 +45,37 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const worker = await Worker.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!worker) {
+      return res.status(404).json({ error: "Worker not found" });
+    }
+
+    res.json(worker);
+  } catch (error) {
+    console.error("Error updating worker status:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+    try {
+      const worker = await Worker.findById(req.params.id);
+      if (!worker) return res.status(404).json({ message: "Worker not found" });
+  
+      res.json(worker);
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
 export default router;

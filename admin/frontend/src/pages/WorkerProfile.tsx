@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { workers } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,20 +8,93 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChevronLeft, Mail, Phone, Calendar, DollarSign, CheckCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  Mail,
+  Phone,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import axios from "axios";
+
+interface Worker {
+  _id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  skill: string;
+  profilePicture?: string;
+  dateJoined: string;
+  status: string;
+  jobsCompleted: number;
+  revenueGenerated: number;
+  rating: number;
+}
+
+const API_URL = "http://localhost:5000/api/workers"; // Backend API URL
 
 const WorkerProfile = () => {
   const { id } = useParams<{ id: string }>();
-  const worker = workers.find((w) => w.id === id);
+  const [worker, setWorker] = useState<Worker | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!worker) {
+  useEffect(() => {
+    const fetchWorker = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/${id}`,
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        setWorker(response.data);
+      } catch (err) {
+        console.error("Error fetching worker details:", err);
+        setError("Failed to fetch worker details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWorker();
+  }, [id]);
+
+  const toggleWorkerStatus = async () => {
+    if (!worker) return;
+
+    try {
+      const newStatus = worker.status === "active" ? "inactive" : "active";
+      await axios.patch(`${API_URL}/${worker._id}`, { status: newStatus });
+
+      setWorker({ ...worker, status: newStatus });
+      toast.success(`Worker ${worker.fullName} is now ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update worker status");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-8">
+        <h2 className="text-2xl font-bold">Loading...</h2>
+      </div>
+    );
+  }
+
+  if (error || !worker) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8">
         <h2 className="text-2xl font-bold">Worker Not Found</h2>
         <p className="mb-4 text-muted-foreground">
-          The worker profile you're looking for doesn't exist.
+          {error || "The worker profile you're looking for doesn't exist."}
         </p>
         <Link to="/workers">
           <Button>Return to Workers List</Button>
@@ -41,15 +114,10 @@ const WorkerProfile = () => {
           </Link>
           <h2 className="text-3xl font-bold tracking-tight">Worker Profile</h2>
         </div>
-        
+
         <div className="flex gap-2">
-          <Link to={`/workers/${id}/edit`}>
-            <Button variant="outline">Edit Profile</Button>
-          </Link>
-          <Button 
-            variant="default" 
-            className={worker.status === "active" ? "bg-red-500 hover:bg-red-600" : "bg-emerald-500 hover:bg-emerald-600"}
-          >
+          <Button variant="default" className={worker.status === "active" ? "bg-red-500 hover:bg-red-600" : "bg-emerald-500 hover:bg-emerald-600"}
+            onClick={toggleWorkerStatus} >
             {worker.status === "active" ? "Deactivate Worker" : "Activate Worker"}
           </Button>
         </div>
@@ -63,7 +131,7 @@ const WorkerProfile = () => {
           <CardContent>
             <div className="flex flex-col items-center text-center">
               <img
-                src={worker.profilePicture}
+                src={worker.profilePicture || "/default-profile.png"}
                 alt={worker.fullName}
                 className="h-32 w-32 rounded-full object-cover"
               />
@@ -101,7 +169,9 @@ const WorkerProfile = () => {
                 <div className="flex items-start gap-2">
                   <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium">{new Date(worker.dateJoined).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium">
+                      {new Date(worker.dateJoined).toLocaleDateString()}
+                    </p>
                     <p className="text-xs text-muted-foreground">Joined</p>
                   </div>
                 </div>
@@ -132,61 +202,6 @@ const WorkerProfile = () => {
                     <span className="text-2xl font-bold">${worker.revenueGenerated}</span>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">Rating</span>
-                  <div className="mt-1 flex items-center gap-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`h-5 w-5 ${
-                            i < Math.floor(worker.rating)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : i < worker.rating
-                              ? "fill-yellow-400/50 text-yellow-400/50"
-                              : "fill-muted text-muted"
-                          }`}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <span className="text-lg font-bold">{worker.rating.toFixed(1)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <Separator className="my-6" />
-
-              <div className="space-y-2">
-                <h4 className="font-medium">Performance Insights</h4>
-                <p className="text-sm text-muted-foreground">
-                  {worker.fullName} has completed {worker.jobsCompleted} jobs since joining on {new Date(worker.dateJoined).toLocaleDateString()}, 
-                  generating ${worker.revenueGenerated} in revenue. 
-                  {worker.rating >= 4.5 ? (
-                    <span> They maintain an excellent rating of {worker.rating.toFixed(1)}, making them one of our top performers.</span>
-                  ) : worker.rating >= 4.0 ? (
-                    <span> They maintain a very good rating of {worker.rating.toFixed(1)} and consistently deliver quality work.</span>
-                  ) : (
-                    <span> Their current rating is {worker.rating.toFixed(1)}, indicating there may be room for improvement.</span>
-                  )}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Recent jobs and customer feedback</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border p-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Job history and customer feedback will be integrated with the backend system.
-                </p>
               </div>
             </CardContent>
           </Card>

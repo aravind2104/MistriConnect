@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,9 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft } from "lucide-react";
-import { skills } from "@/data/mockData";
 import { SkillType } from "@/types";
 import { toast } from "sonner";
+
+const API_URL = "http://localhost:5000/api/workers";
 
 const WorkerRegistration = () => {
   const [formData, setFormData] = useState({
@@ -23,13 +25,15 @@ const WorkerRegistration = () => {
     phoneNumber: "",
     skill: "" as SkillType | "",
     bio: "",
+    profilePicture: "",
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const navigate = useNavigate();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -38,37 +42,33 @@ const WorkerRegistration = () => {
     setFormData((prev) => ({ ...prev, skill: value as SkillType }));
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!formData.fullName || !formData.email || !formData.phoneNumber || !formData.skill) {
       toast("Please fill in all required fields");
       return;
     }
-  
+
     setIsSubmitting(true);
-  
+
     try {
-      const response = await fetch("http://localhost:5000/api/workers", {
-        method: "POST",
+      const response = await axios.post(API_URL, formData, {
+        withCredentials: true,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
       });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        toast(`${formData.fullName} has been added as a ${formData.skill}`);
-        navigate("/workers");
-      } else {
-        toast.error(data.error || "Failed to register worker");
-      }
-    } catch (error) {
+      console.log("Response:", response.data);
+      toast.success(`${formData.fullName} has been added as a ${formData.skill}`);
+      navigate("/workers");
+    } catch (error: unknown) {
       console.error("Error:", error);
-      toast.error("There was a problem registering the worker");
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("There was a problem registering the worker");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +107,7 @@ const WorkerRegistration = () => {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address *</Label>
                 <Input
@@ -120,7 +120,7 @@ const WorkerRegistration = () => {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Phone Number *</Label>
                 <Input
@@ -135,10 +135,7 @@ const WorkerRegistration = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="skill">Skill/Profession *</Label>
-                <Select
-                  value={formData.skill}
-                  onValueChange={handleSkillChange}
-                >
+                <Select value={formData.skill} onValueChange={handleSkillChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select profession" />
                   </SelectTrigger>
@@ -165,7 +162,6 @@ const WorkerRegistration = () => {
               </div>
             </div>
           </div>
-
         </div>
 
         <div className="flex justify-end space-x-4">
@@ -182,3 +178,12 @@ const WorkerRegistration = () => {
 };
 
 export default WorkerRegistration;
+const skills: SkillType[] = [
+  "Plumber",
+  "Electrician",
+  "Carpenter",
+  "Mason",
+  "Painter",
+  "Welder",
+  "Gardener",
+];
