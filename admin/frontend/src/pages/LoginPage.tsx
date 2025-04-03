@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { MistriLogo } from "@/components/MistriLogo";
 
-const Login = () => {
+const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,8 +18,17 @@ const Login = () => {
       return;
     }
 
-    // Mock login check
+    // Mock authentication check
     if (email === "user@example.com" && password === "123") {
+      const adminUser = {
+        id: "admin-1",
+        name: "Admin User",
+        email: email,
+      };
+
+      // Store admin in localStorage
+      localStorage.setItem("mistri-admin", JSON.stringify(adminUser));
+
       toast.success("Login successful! Redirecting...");
       setTimeout(() => navigate("/dashboard"), 2000);
     } else {
@@ -84,4 +93,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
