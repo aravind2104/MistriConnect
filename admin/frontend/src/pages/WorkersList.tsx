@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { workers, skills } from "@/data/mockData";
-import { SkillType, Worker } from "@/types";
+import { Worker } from "@/types";
 import { Search, Plus, Star } from "lucide-react";
 import {
   Select,
@@ -122,19 +122,12 @@ const WorkerCard = ({ worker }: WorkerCardProps) => {
     <Link to={`/workers/${worker.id}`} className="block">
       <div className="card-hover rounded-xl border bg-card p-6 shadow-sm">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src={worker.profilePicture}
-              alt={worker.fullName}
-              className="h-14 w-14 rounded-full object-cover"
-            />
-            <div>
-              <h3 className="font-semibold">{worker.fullName}</h3>
-              <p className="text-sm text-muted-foreground">{worker.skill}</p>
-              <div className="mt-1 flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium">{worker.rating}</span>
-              </div>
+          <div>
+            <h3 className="font-semibold">{worker.fullName}</h3>
+            <p className="text-sm text-muted-foreground">{worker.skill}</p>
+            <div className="mt-1 flex items-center gap-1">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span className="text-sm font-medium">{worker.rating}</span>
             </div>
           </div>
           <div

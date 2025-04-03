@@ -1,0 +1,13 @@
+import mongoose from "mongoose";
+
+const WorkerSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phoneNumber: { type: String, required: true },
+  skill: { type: String, required: true },
+  bio: { type: String },
+  status: { type: String, enum: ["active", "inactive"], default: "active" },
+});
+
+const Worker = mongoose.model("Worker", WorkerSchema);
+export default Worker;

@@ -1,13 +1,23 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 interface ProtectedRouteProps {
   redirectPath?: string;
 }
 
 const ProtectedRoute = ({ redirectPath = "/login" }: ProtectedRouteProps) => {
-  const admin = localStorage.getItem("mistri-admin");
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("mistri-admin")
+  );
 
-  if (!admin) {
+  useEffect(() => {
+    const checkAuth = () => setIsAuthenticated(!!localStorage.getItem("mistri-admin"));
+
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
+
+  if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
   }
 

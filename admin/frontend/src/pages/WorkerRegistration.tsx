@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, Upload } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { skills } from "@/data/mockData";
 import { SkillType } from "@/types";
 import { toast } from "sonner";
@@ -25,8 +25,6 @@ const WorkerRegistration = () => {
     bio: "",
   });
   
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const navigate = useNavigate();
@@ -40,41 +38,37 @@ const WorkerRegistration = () => {
     setFormData((prev) => ({ ...prev, skill: value as SkillType }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setProfileImage(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Form validation
+  
     if (!formData.fullName || !formData.email || !formData.phoneNumber || !formData.skill) {
       toast("Please fill in all required fields");
       return;
     }
-    
+  
     setIsSubmitting(true);
-    
+  
     try {
-      // In a real app, this would be an API call to add the worker
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-      
-      toast(`${formData.fullName} has been added as a ${formData.skill}`);
-      
-      navigate("/workers");
+      const response = await fetch("http://localhost:5000/api/workers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        toast(`${formData.fullName} has been added as a ${formData.skill}`);
+        navigate("/workers");
+      } else {
+        toast.error(data.error || "Failed to register worker");
+      }
     } catch (error) {
-      console.error("Error registering worker:", error);
-      toast("There was a problem registering the worker");
+      console.error("Error:", error);
+      toast.error("There was a problem registering the worker");
     } finally {
       setIsSubmitting(false);
     }
@@ -172,52 +166,6 @@ const WorkerRegistration = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold">Profile Photo</h3>
-              <p className="text-sm text-muted-foreground">
-                Add a profile picture for the worker
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="group relative h-48 w-48 rounded-full bg-muted">
-                {profileImagePreview ? (
-                  <img
-                    src={profileImagePreview}
-                    alt="Profile Preview"
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center rounded-full border-2 border-dashed text-muted-foreground">
-                    <Upload className="h-10 w-10" />
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                  <label
-                    htmlFor="profileImage"
-                    className="flex cursor-pointer flex-col items-center justify-center text-white"
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span className="mt-1 text-sm">Change photo</span>
-                  </label>
-                  <input
-                    id="profileImage"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                <p>Click to upload or drag and drop</p>
-                <p>SVG, PNG, JPG (max. 2MB)</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="flex justify-end space-x-4">

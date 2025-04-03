@@ -17,24 +17,28 @@ const LoginPage = () => {
       toast.error("Please enter email and password");
       return;
     }
-
-    // Mock authentication check
+  
     if (email === "user@example.com" && password === "123") {
       const adminUser = {
         id: "admin-1",
         name: "Admin User",
         email: email,
       };
-
-      // Store admin in localStorage
-      localStorage.setItem("mistri-admin", JSON.stringify(adminUser));
-
+  
+      try {
+        localStorage.setItem("mistri-admin", JSON.stringify(adminUser));
+        console.log("Stored in localStorage:", localStorage.getItem("mistri-admin"));
+      } catch (error) {
+        console.error("localStorage error:", error);
+      }
+  
       toast.success("Login successful! Redirecting...");
       setTimeout(() => navigate("/dashboard"), 2000);
     } else {
       toast.error("Invalid email or password");
     }
   };
+  
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
