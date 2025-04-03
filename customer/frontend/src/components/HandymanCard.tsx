@@ -17,14 +17,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-
+import axios from "axios";
 interface HandymanCardProps {
   handyman: Handyman;
 }
 
 export const HandymanCard = ({ handyman }: HandymanCardProps) => {
   const navigate = useNavigate();
-  const [showDetails, setShowDetails] = useState(false);
   const [isFavorite, setIsFavorite] = useState(handyman.isFavorite || false);
   const [bookingDetails, setBookingDetails] = useState({
     date: "",
@@ -35,108 +34,100 @@ export const HandymanCard = ({ handyman }: HandymanCardProps) => {
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
-    toast( isFavorite
+    toast(
+      isFavorite
         ? `${handyman.name} has been removed from your favorites`
-        : `${handyman.name} has been added to your favorites`,
-   );
+        : `${handyman.name} has been added to your favorites}`
+    );
   };
 
-  const handleBookingSubmit = () => {
-    // In a real app, this would send the booking request to the API
-    toast(`Your booking request with ${handyman.name} has been sent successfully.`);
-    
-    // Navigate to dashboard after booking
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1500);
-  };
-
-  const renderStars = (rating: number) => {
-    return Array(5)
-      .fill(0)
-      .map((_, i) => (
-        <span key={i} className={i < rating ? "text-yellow-500" : "text-gray-300"}>
-          ★
-        </span>
-      ));
+  const handleBookingSubmit = async () => {
+    const userId = localStorage.getItem("customer_token"); // Retrieve userId from localStorage
+    if (!userId) {
+      toast.error("You need to be logged in to book a service.");
+      return;
+    }
+  
+    const bookingData = {
+      WorkerId: handyman._id,
+      description: bookingDetails.description,
+      Area: bookingDetails.address,
+      date: bookingDetails.date,
+      slot: bookingDetails.time, // Slot replaces 'time' as per backend
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:8001/customer/book",
+        bookingData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true, // Move it outside headers
+        }
+      );
+      
+  
+      if (response.status === 201) {
+        toast.success(`Your booking request with ${handyman.name} has been sent successfully.`);
+        setTimeout(() => navigate("/dashboard"), 1500);
+      }
+    } catch (error) {
+      console.error("Booking error:", error);
+      const err = error as import("axios").AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || "Failed to book service. Please try again.");
+    }
   };
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <CardContent className="p-0 flex-grow">
-        <div className="h-36 bg-gray-200 relative">
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            {handyman.profileImage ? (
-              <img 
-                src={handyman.profileImage} 
-                alt={handyman.name} 
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span>No Image Available</span>
-            )}
+    <Card className="overflow-hidden h-full flex flex-col border border-gray-300 rounded-lg shadow-sm">
+      <CardContent className="p-4 flex flex-col gap-2">
+        {/* Name & Category */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">{handyman.name}</h3>
+            <p className="text-sm text-gray-500">{handyman.category}</p>
           </div>
-          
-          {handyman.availability === "Available Now" && (
-            <Badge className="absolute top-2 right-2 bg-green-500">
-              Available Now
-            </Badge>
-          )}
-          
+
+          {/* Favorite Button */}
           <button
             onClick={toggleFavorite}
-            className={`absolute top-2 left-2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center transition-colors ${
+            className={`w-8 h-8 rounded-full bg-gray-100 shadow flex items-center justify-center transition-colors ${
               isFavorite ? "text-red-500" : "text-gray-400 hover:text-gray-600"
             }`}
           >
             {isFavorite ? "♥" : "♡"}
           </button>
         </div>
-        
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-medium">{handyman.name}</h3>
-              <p className="text-sm text-gray-500">{handyman.category}</p>
-            </div>
-            <div className="flex text-sm">
-              {renderStars(handyman.rating)}
-              <span className="ml-1 text-gray-600">({handyman.reviews})</span>
-            </div>
+
+        {/* Location & Price */}
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Location:</span>
+            <span className="font-medium">{handyman.area}</span>
           </div>
-          
-          <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-            {handyman.description}
-          </p>
-          
-          {showDetails && (
-            <div className="mt-3 text-sm">
-              <div className="flex justify-between mb-1">
-                <span className="text-gray-500">Location:</span>
-                <span>{handyman.location}</span>
-              </div>
-              <div className="flex justify-between mb-1">
-                <span className="text-gray-500">Hourly Rate:</span>
-                <span>${handyman.hourlyRate.toFixed(2)}/hr</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Experience:</span>
-                <span>{handyman.experience} years</span>
-              </div>
-            </div>
-          )}
-          
-          <Button
-            variant="link"
-            size="sm"
-            className="p-0 h-auto mt-2 text-blue-600"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            {showDetails ? "Show less" : "Show more"}
-          </Button>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Price:</span>
+            <span className="font-medium">₹{handyman.price} per hour</span>
+          </div>
         </div>
+
+        {/* Availability Badge */}
+        {handyman.availability === "Available Now" && (
+          <Badge className="bg-green-500 text-white w-fit">Available Now</Badge>
+        )}
+
+        {/* Ratings */}
+        <div className="flex items-center text-sm">
+          <span className="ml-1 text-gray-600">({handyman.reviews} reviews)</span>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-gray-600">{handyman.description}</p>
       </CardContent>
-      
+
+      {/* Book Now Button */}
       <CardFooter className="p-4 bg-gray-50 border-t">
         <Dialog>
           <DialogTrigger asChild>
@@ -145,70 +136,56 @@ export const HandymanCard = ({ handyman }: HandymanCardProps) => {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Book {handyman.name}</DialogTitle>
-              <DialogDescription>
-                Fill in the details below to request a booking with this handyman.
-              </DialogDescription>
+              <DialogDescription>Fill in the details below to book this handyman.</DialogDescription>
             </DialogHeader>
-            
+
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={bookingDetails.date}
-                    onChange={(e) =>
-                      setBookingDetails({ ...bookingDetails, date: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="time">Time</Label>
-                  <Input
-                    id="time"
-                    type="time"
-                    value={bookingDetails.time}
-                    onChange={(e) =>
-                      setBookingDetails({ ...bookingDetails, time: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="address">Service Address</Label>
-                <Input
-                  id="address"
-                  placeholder="Enter your address"
-                  value={bookingDetails.address}
-                  onChange={(e) =>
-                    setBookingDetails({ ...bookingDetails, address: e.target.value })
-                  }
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="description">Job Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe what you need help with..."
-                  value={bookingDetails.description}
-                  onChange={(e) =>
-                    setBookingDetails({ ...bookingDetails, description: e.target.value })
-                  }
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <Label>Estimated Price</Label>
-                <div className="text-lg font-semibold">${handyman.hourlyRate.toFixed(2)}/hr</div>
-                <p className="text-xs text-gray-500">
-                  Final price may vary based on job complexity and duration
-                </p>
-              </div>
-            </div>
-            
+  <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-2">
+      <Label htmlFor="date">Date</Label>
+      <Input
+        id="date"
+        type="date"
+        value={bookingDetails.date}
+        onChange={(e) => setBookingDetails({ ...bookingDetails, date: e.target.value })}
+      />
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor="slot">Time Slot</Label>
+      <select
+        id="slot"
+        value={bookingDetails.time}
+        onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
+        className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Select a time slot</option>
+        <option value="forenoon">Forenoon</option>
+        <option value="afternoon">Afternoon</option>
+      </select>
+    </div>
+  </div>
+
+  <div className="space-y-2">
+    <Label htmlFor="address">Service Area</Label>
+    <Input
+      id="address"
+      placeholder="Enter your address"
+      value={bookingDetails.address}
+      onChange={(e) => setBookingDetails({ ...bookingDetails, address: e.target.value })}
+    />
+  </div>
+
+  <div className="space-y-2">
+    <Label htmlFor="description">Job Description</Label>
+    <Textarea
+      id="description"
+      placeholder="Describe what you need help with..."
+      value={bookingDetails.description}
+      onChange={(e) => setBookingDetails({ ...bookingDetails, description: e.target.value })}
+    />
+  </div>
+</div>
+
             <DialogFooter>
               <Button onClick={handleBookingSubmit} className="w-full">
                 Confirm Booking

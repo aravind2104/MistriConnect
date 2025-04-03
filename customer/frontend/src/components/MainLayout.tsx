@@ -18,8 +18,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [hasNotifications, setHasNotifications] = useState(true);
-
+  const user = localStorage.getItem("customer_token");
+  const handleLogout = () => {
+    localStorage.removeItem("customer_token");
+    localStorage.removeItem("mistri-admin");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
   // Close mobile menu when route changes
   useEffect(() => {
     setShowMobileMenu(false);
@@ -29,7 +34,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Find Services", path: "/search" },
     { name: "Bookings", path: "/booking-history" },
-    { name: "Notifications", path: "/notifications" },
   ];
 
   return (
@@ -55,47 +59,28 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                   }`}
                 >
                   {item.name}
-                  {item.name === "Notifications" && hasNotifications && (
-                    <span className="ml-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
-                  )}
                 </Link>
               ))}
             </nav>
           )}
           
-          {/* User Menu (Desktop) */}
-          {!isMobile && (
-            <div className="hidden md:flex items-center space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative rounded-full h-8 w-8 p-0">
-                    <span className="sr-only">Open user menu</span>
-                    <div className="flex items-center justify-center h-full w-full bg-gray-200 rounded-full">
-                      <span className="text-sm font-medium">JD</span>
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="p-2 border-b">
-                    <p className="font-medium">John Doe</p>
-                    <p className="text-sm text-gray-500">john.doe@example.com</p>
-                  </div>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings" className="cursor-pointer">Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/help" className="cursor-pointer">Help & Support</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/login" className="cursor-pointer text-red-600">Logout</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            {user ? (
+              <Button 
+                variant="destructive" 
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" className="mr-2">Log in</Button>
+                </Link>
+              </>
+            )}
+          </div>
           
           {/* Mobile Menu Button */}
           {isMobile && (
@@ -129,9 +114,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                   }`}
                 >
                   {item.name}
-                  {item.name === "Notifications" && hasNotifications && (
-                    <span className="ml-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
-                  )}
+          
                 </Link>
               ))}
               <div className="border-t pt-2 mt-2">

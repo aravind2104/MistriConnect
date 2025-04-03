@@ -8,6 +8,10 @@ import { toast } from "sonner";
 interface BookingCardProps {
   booking: Booking;
   showRating?: boolean;
+  date?: string;
+  slot?: string;
+  workerName?: string;
+  Phone?: string;
   onCancel?: () => void;
 }
 
@@ -39,53 +43,57 @@ export const BookingCard = ({ booking, showRating = false, onCancel }: BookingCa
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-medium">{booking.serviceName}</h3>
-              <p className="text-sm text-gray-500">{booking.handymanName}</p>
-            </div>
-            <Badge 
-              className={statusColors[booking.status as keyof typeof statusColors]}
-            >
-              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-            </Badge>
+    <CardContent className="p-0">
+      <div className="p-4">
+        {/* Worker Name as Title */}
+        <h2 className="text-lg font-semibold mb-2">{booking.handymanName}</h2>
+  
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h3 className="font-medium">{booking.serviceName}</h3>
           </div>
-          
-          <div className="mt-3 text-sm">
-            <div className="flex justify-between mb-1">
-              <span className="text-gray-500">Date:</span>
-              <span>{formatDate(booking.date)}</span>
-            </div>
-            <div className="flex justify-between mb-1">
-              <span className="text-gray-500">Location:</span>
-              <span>{booking.location}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Price:</span>
-              <span>${booking.price.toFixed(2)}</span>
-            </div>
+          <Badge 
+            className={statusColors[booking.status as keyof typeof statusColors]}
+          >
+            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+          </Badge>
+        </div>
+        
+        <div className="mt-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Date:</span>
+            <span>{booking.date}</span>
           </div>
         </div>
-      </CardContent>
-      
-      <CardFooter className="flex justify-between p-4 bg-gray-50 border-t">
-        {booking.status === "ongoing" && onCancel && (
-          <div className="flex gap-2 w-full">
-            <Button size="sm" variant="outline" className="flex-1">
-              Contact
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="flex-1 text-red-600 hover:text-red-700" 
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
+        <div className="mt-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Slot:</span>
+            <span>{booking.slot}</span>
           </div>
-        )}
+        </div>
+        <div className="mt-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Contact:</span>
+            <span>{booking.Phone}</span>
+          </div>
+        </div>
+      </div>
+    </CardContent>
+    
+    <CardFooter className="flex justify-between p-4 bg-gray-50 border-t">
+      {booking.status === "pending" && onCancel && (
+        <div className="flex gap-2 w-full">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="flex-1 text-red-600 hover:text-red-700" 
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
+  
         
         {booking.status === "completed" && showRating && (
           <div className="w-full">
@@ -107,12 +115,7 @@ export const BookingCard = ({ booking, showRating = false, onCancel }: BookingCa
             </div>
           </div>
         )}
-        
-        {booking.status === "pending" && (
-          <Button size="sm" variant="outline" className="w-full">
-            Confirm Booking
-          </Button>
-        )}
+      
         
         {booking.status === "cancelled" && (
           <div className="text-sm text-gray-500">

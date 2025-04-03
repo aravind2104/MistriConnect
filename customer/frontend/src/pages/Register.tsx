@@ -6,27 +6,28 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { MistriLogo } from "@/components/MistriLogo";
+import { useAuth } from "@/context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: "",
+    username: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
+    area:"",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  const { signup } = useAuth();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword || !formData.area) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -35,14 +36,18 @@ const Register = () => {
       toast.error("Passwords do not match");
       return;
     }
-    
-    // Mock registration success
-    toast.success("Account created successfully! Redirecting to login...");
-    
-    // Redirect to login after a short delay
-    setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+   
+    signup(formData)
+      .then(() => {
+        toast.success("Account created successfully! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      })
+      .catch((error) => {
+        toast.error(error.message || "Signup failed");
+      });
+
   };
 
   return (
@@ -62,12 +67,12 @@ const Register = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="username">Full Name</Label>
               <Input
-                id="fullName"
-                name="fullName"
+                id="username"
+                name="username"
                 placeholder="John Doe"
-                value={formData.fullName}
+                value={formData.username}
                 onChange={handleChange}
               />
             </div>
@@ -85,13 +90,11 @@ const Register = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="Area">Area</Label>
               <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                value={formData.phone}
+                id="Area"
+                name="area"
+                value={formData.area}
                 onChange={handleChange}
               />
             </div>

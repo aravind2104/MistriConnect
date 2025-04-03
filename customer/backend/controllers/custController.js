@@ -1,67 +1,91 @@
-import User from "../models/user.model";
-import Handyman from "";
-import Booking from "";
+import Worker from "../models/workerModel.js";
+import JobRequest from "../models/jobRequestModel.js";
 
 //search service
-export const searchServices = async(req,res)=>{
+export const searchServices = async (req, res) => {
+    console.log("Searching services...");
+    console.log("Incoming query:", req.query); // Debugging
+
     try {
-        const {serviceType, Area} = req.body;
-        if(!serviceType || !Area) {
-            return res.status(400).json({message:"Please fill all fields"});
+        const { serviceType, area } = req.query; // Ensure correct case
+
+        if (!serviceType || !area) {
+            return res.status(400).json({ message: "Please provide serviceType and area" });
         }
-        const handymen = await Handyman.find({ serviceType, Area});
+
+        console.log(`Searching for serviceType: ${serviceType}, area: ${area}`);
+
+        const handymen = await Worker.find({ serviceType, area });
+
+        console.log("Handymen found:", handymen);
         res.status(200).json(handymen);
     } catch (error) {
-        console.error(error);
+        console.error("Error fetching handymen:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
+
 
 //book service
 export const bookService = async(req,res)=>{
     try {
-        const { handymanId, userId, serviceType, Area, date } = req.body;
-        if(!handymanId || !userId || !serviceType || !Area || !date) {
+        const { WorkerId, description, Area, date , slot} = req.body;
+        const userId = req.user._id;    
+        if(!WorkerId || !userId || !description || !Area || !date || !slot) {
             return res.status(400).json({message:"Please fill all fields"});
         }
-        // Check if the handyman is available for the selected date
-        const handyman = await Handyman.findById(handymanId);
-        if (!handyman) {
-            return res.status(404).json({ message: "Handyman not found" });
+        // Check if the Worker is available for the selected date
+        const worker = await Worker.findById(WorkerId);
+        if (!worker) {
+            return res.status(404).json({ message: "Worker not found" });
         }
-        const notAvailable = handyman.booked.some((slot) => {
-            const slotDate = new Date(slot.date);
-            return slotDate.toDateString() === new Date(date).toDateString();
+        const notAvailable = worker.availability.some((booking) => {
+            const bookingDate = booking.date
+            return bookingDate === date && booking.slot === slot;
         });
         if (notAvailable) {
-            return res.status(400).json({ message: "Handyman is not available on the selected date" });
+            return res.status(400).json({ message: "worker is not available on the selected date" });
         }
-        // Create a new booking
-        const booking = new Booking({
-            handymanId,
-            userId,
-            serviceType,
-            Area,
+        // Create a new JobRequest
+        const jobreq = new JobRequest({
+            customerId: userId,
+            workerId: WorkerId,
+            description,
             date,
-            status: "Pending"
+            slot,
+            status: "pending"
         });
-        await booking.save();
-        res.status(201).json({ message: "Booking request sent successfully" });
+        await jobreq.save();
+        res.status(201).json({ message: "JobRequest request sent successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
     }
 }
 
-//view bookings
+//view JobRequests
 export const viewBookings = async(req,res)=>{
     try {
-        const { userId } = req.params;
+        const  userId  = req.user._id;
+        console.log(userId);
         if(!userId) {
             return res.status(400).json({message:"Please provide user ID"});
         }
-        const bookings = await Booking.find({ userId });
-        res.status(200).json(bookings);
+        const JobRequests = await JobRequest.find({ customerId: userId });
+        const worker = await Worker.find(JobRequest.workerId);
+        const JobRequestsWithWorkerName = await Promise.all(
+            JobRequests.map(async (jobRequest) => {
+                const worker = await Worker.findById(jobRequest.workerId);
+                return {
+                    ...jobRequest._doc,
+                    workerName: worker.name, 
+                    Phone: worker.phoneNumber,
+                };
+            })
+        );
+        res.status(200).json(JobRequestsWithWorkerName);
+        res.status(200).json(JobRequests);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
@@ -71,16 +95,16 @@ export const viewBookings = async(req,res)=>{
 //leave review
 export const leaveReview = async(req,res)=>{
     try {
-        const { bookingId, rating, comment } = req.body;
-        if(!bookingId || !rating || !comment) {
+        const { JobRequestId, rating, comment } = req.body;
+        if(!JobRequestId || !rating || !comment) {
             return res.status(400).json({message:"Please fill all fields"});
         }
-        const booking = await Booking.findById(bookingId);
-        if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
+        const JobRequest = await JobRequest.findById(JobRequestId);
+        if (!JobRequest) {
+            return res.status(404).json({ message: "JobRequest not found" });
         }
-        booking.review = { rating, comment };
-        await booking.save();
+        JobRequest.review = { rating, comment };
+        await JobRequest.save();
         res.status(200).json({ message: "Review submitted successfully" });
     } catch (error) {
         console.error(error);

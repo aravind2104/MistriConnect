@@ -7,7 +7,7 @@ const generateTokenAndSetCookie = (worker, res) => {
         { expiresIn: '7d' }  // Token valid for 7 days
     );
 
-    res.cookie('jwt', token, {
+    res.cookie('jwt_worker', token, {
         httpOnly: true, // Prevents XSS attacks
         secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
         sameSite: 'strict',

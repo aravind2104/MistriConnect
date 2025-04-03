@@ -2,29 +2,38 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { MistriLogo } from "@/components/MistriLogo";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  // Email-Password Login State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const handleLogin = () => {
+  const { login } = useAuth();
+  const handlePasswordLogin = async (e:React.FormEvent) => {
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
     }
 
-    // Mock login check
-    if (email === "user@example.com" && password === "123") {
-      toast.success("Login successful! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 2000);
-    } else {
-      toast.error("Invalid email or password");
-    }
+    e.preventDefault();
+    login(email,password)
+      .then(() => {
+        toast.success("Login Success");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
+      })
+      .catch((error) => {
+        toast.error(error.message ||"Login failed");
+      });
+
   };
 
   return (
@@ -36,39 +45,41 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Login to MistriConnect</CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to continue
-          </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+          <Tabs defaultValue="password">
+            {/* Email & Password Login */}
+            <TabsContent value="password">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
 
-            <Button className="w-full" onClick={handleLogin}>
-              Login
-            </Button>
-          </div>
+                <Button className="w-full" onClick={handlePasswordLogin}>
+                  Login
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">

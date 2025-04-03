@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(response.data.token);
 
       localStorage.setItem("user", JSON.stringify(response.data.worker));
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("worker_token", response.data.token);
 
       toast.success("Login successful");
       navigate("/worker/dashboard");
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    localStorage.removeItem("worker_token");
 
     toast.info("Logged out successfully");
     navigate("/login");

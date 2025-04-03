@@ -95,6 +95,7 @@ export const getJobRequestById = async (req, res) => {
 export const acceptJobRequest = async (req, res) => {
     try {
         const jobRequest = await JobRequest.findById(req.params.id);
+        console.log("Job Request:", jobRequest);
         if (!jobRequest || jobRequest.workerId.toString() !== req.worker.id) {
             return res.status(404).json({ message: "Job request not found or unauthorized" });
         }
