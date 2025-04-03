@@ -77,9 +77,6 @@ const Navbar = () => {
                 <Link to="/login">
                   <Button variant="outline" className="mr-2">Log in</Button>
                 </Link>
-                <Link to="/signup">
-                  <Button>Sign up</Button>
-                </Link>
               </>
             )}
           </div>

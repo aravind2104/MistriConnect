@@ -29,13 +29,18 @@ interface Worker {
   skill: string;
   profilePicture?: string;
   dateJoined: string;
-  status: string;
-  jobsCompleted: number;
-  revenueGenerated: number;
-  rating: number;
+  price: string;
+  area: string;
+  bio: string;
+  status: "active" | "inactive";
+  earnings: {
+    month: string;
+    totalEarned: number;
+    jobs: string[];
+  }[];
 }
 
-const API_URL = "http://localhost:5000/api/workers"; // Backend API URL
+const API_URL = "http://localhost:8000/api/workers"; // Backend API URL
 
 const WorkerProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -181,25 +186,49 @@ const WorkerProfile = () => {
         </Card>
 
         <div className="grid gap-6 md:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Statistics</CardTitle>
-              <CardDescription>Worker's activity and revenue metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">Total Jobs</span>
-                  <div className="mt-1 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-emerald-500" />
-                    <span className="text-2xl font-bold">{worker.jobsCompleted}</span>
+  <Card>
+    <CardHeader>
+      <CardTitle>Performance Statistics</CardTitle>
+      <CardDescription>Worker's activity and revenue metrics</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">Total Jobs</span>
+          <div className="mt-1 flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-emerald-500" />
+            <span className="text-2xl font-bold">{worker.earnings.reduce((total, month) => total + month.jobs.length, 0)}</span>
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">Revenue</span>
+          <div className="mt-1 flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-emerald-500" />
+            <span className="text-2xl font-bold">${worker.earnings.reduce((total, month) => total + month.totalEarned, 0)}</span>
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">Job Cost</span>
+          <div className="mt-1 flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-emerald-500" />
+            <span className="text-2xl font-bold">${worker.price}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* New Section for Location & Bio */}
+      <Separator className="my-4" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">Location</span>
+          <div className="mt-1 flex items-center gap-2">
+                <span className="text-2xl font-bold">{worker.area}</span>
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">Revenue</span>
-                  <div className="mt-1 flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-emerald-500" />
-                    <span className="text-2xl font-bold">${worker.revenueGenerated}</span>
+                  <span className="text-sm text-muted-foreground">Bio</span>
+                  <div className="mt-1">
+                    <p className="text-base text-gray-700 dark:text-gray-300">{worker.bio || "No bio available"}</p>
                   </div>
                 </div>
               </div>

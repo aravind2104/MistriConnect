@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { monthlyData } from "@/data/mockData";
 
-const API_URL = "http://localhost:5000/api/workers"; // Adjust as needed
+const API_URL = "http://localhost:8000/api/workers"; // Adjust as needed
 
 const Dashboard = () => {
   const [stats, setStats] = useState({

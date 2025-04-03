@@ -9,7 +9,6 @@ import Login from "./pages/Login.tsx";
 import WorkerProfile from "./pages/WorkerProfile.tsx";
 import WorkerDashboard from "./pages/WorkerDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Signup from "./pages/Signup.tsx";
 
 // Layout components
 import Layout from "./components/layout/Layout";
@@ -39,9 +38,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Layout><RedirectToDashboard /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
-            <Route path="/signup" element={<Layout><Signup /></Layout>} />
             <Route path="/forgot-password" element={<Layout><ForgotPassword/></Layout>} />
             <Route path="/reset-password/:token" element={<Layout><ResetPassword/></Layout>} />
+
             <Route element={<ProtectedRoute />}>
               <Route path="/worker/profile" element={<Layout><WorkerProfile /></Layout>} />
               <Route path="/worker/dashboard" element={<Layout><WorkerDashboard /></Layout>} />

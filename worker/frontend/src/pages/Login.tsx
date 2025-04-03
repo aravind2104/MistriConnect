@@ -1,10 +1,9 @@
 // src/pages/Login.tsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent} from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { HardHat } from 'lucide-react';
 
@@ -89,18 +88,7 @@ const Login = () => {
               </form>
             </CardContent>
 
-            {/* Card Footer */}
-            <CardFooter className="bg-gray-50 px-6 py-4 border-t">
-              <p className="text-sm text-center text-gray-600">
-                Don't have an account?{' '}
-                <Link
-                  to="/signup"
-                  className="font-medium text-blue-600 hover:text-blue-500 hover:underline"
-                >
-                  Register here
-                </Link>
-              </p>
-            </CardFooter>
+    
           </div>
         </div>
       </div>

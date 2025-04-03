@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 // Set base URL for all axios requests
-axios.defaults.baseURL = "http://localhost:5000/api";
+axios.defaults.baseURL = "http://localhost:8000/api";
 
 const WorkersList = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -48,10 +48,10 @@ const WorkersList = () => {
 
   const filteredWorkers = workers.filter((worker) => {
     const matchesSearch =
-      worker.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       worker.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesSkill = skillFilter === "all" || worker.skill === skillFilter;
+    const matchesSkill = skillFilter === "all" || worker.serviceType === skillFilter;
     const matchesStatus = statusFilter === "all" || worker.status === statusFilter;
 
     return matchesSearch && matchesSkill && matchesStatus;
@@ -140,8 +140,8 @@ const WorkerCard = ({ worker }: WorkerCardProps) => {
       <div className="card-hover rounded-xl border bg-card p-6 shadow-sm">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="font-semibold">{worker.fullName}</h3>
-            <p className="text-sm text-muted-foreground">{worker.skill}</p>
+            <h3 className="font-semibold">{worker.name}</h3>
+            <p className="text-sm text-muted-foreground">{worker.serviceType}</p>
           </div>
           <div
             className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -155,15 +155,19 @@ const WorkerCard = ({ worker }: WorkerCardProps) => {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <p className="text-muted-foreground">Jobs</p>
-            <p className="font-medium">{worker.jobsCompleted}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Revenue</p>
-            <p className="font-medium">${worker.revenueGenerated}</p>
-          </div>
+        <div>
+        <p className="text-muted-foreground">Jobs</p>
+        <p className="font-medium">
+          {worker.earnings.reduce((total, month) => total + month.jobs.length, 0)}
+        </p>
         </div>
+        <div>
+        <p className="text-muted-foreground">Revenue</p>
+          <p className="font-medium">
+            ${worker.earnings.reduce((total, month) => total + month.totalEarned, 0)}
+          </p>
+        </div>
+      </div>
       </div>
     </Link>
   );

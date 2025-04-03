@@ -4,7 +4,6 @@ import protectRoute from '../middlewares/protectRoute.js';
 
 const router = express.Router();
 
-router.post('/register', registerWorker);
 router.post('/login', loginWorker);
 router.post('/logout', logoutWorker);
 router.post('/forgot-password',forgotPassword)

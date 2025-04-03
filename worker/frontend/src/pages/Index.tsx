@@ -22,11 +22,6 @@ const Index = () => {
                     Worker Login
                   </Button>
                 </Link>
-                <Link to="/signup">
-                  <Button size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 px-8 hover:bg-blue-50">
-                    Register Now
-                  </Button>
-                </Link>
               </div>
             </div>
             <div className="flex justify-center lg:block">

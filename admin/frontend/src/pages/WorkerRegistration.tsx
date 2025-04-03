@@ -13,19 +13,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft } from "lucide-react";
-import { SkillType } from "@/types";
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:5000/api/workers";
+const API_URL = "http://localhost:8000/api/workers";
 
 const WorkerRegistration = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",      
+    username: "",  
     email: "",
     phoneNumber: "",
-    skill: "" as SkillType | "",
+    serviceType: "", 
+    area: "",       
     bio: "",
-    profilePicture: "",
+    password: "",
+    price: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,15 +40,20 @@ const WorkerRegistration = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSkillChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, skill: value as SkillType }));
+  const handleServiceTypeChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, serviceType: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.phoneNumber || !formData.skill) {
+    if (!formData.name || !formData.username || !formData.email || !formData.phoneNumber || !formData.serviceType || !formData.password || !formData.area || !formData.price) {
       toast("Please fill in all required fields");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast("Password must be at least 6 characters long");
       return;
     }
 
@@ -55,12 +62,11 @@ const WorkerRegistration = () => {
     try {
       const response = await axios.post(API_URL, formData, {
         withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
+
       console.log("Response:", response.data);
-      toast.success(`${formData.fullName} has been added as a ${formData.skill}`);
+      toast.success(`${formData.name} has been registered as a ${formData.serviceType}`);
       navigate("/workers");
     } catch (error: unknown) {
       console.error("Error:", error);
@@ -97,13 +103,25 @@ const WorkerRegistration = () => {
 
             <div className="grid gap-3">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label htmlFor="name">Full Name *</Label>
                 <Input
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter worker's full name"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username">Username *</Label>
+                <Input
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  placeholder="Enter a unique username"
                   required
                 />
               </div>
@@ -134,21 +152,43 @@ const WorkerRegistration = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="skill">Skill/Profession *</Label>
-                <Select value={formData.skill} onValueChange={handleSkillChange}>
+                <Label htmlFor="serviceType">Service Type *</Label>
+                <Select value={formData.serviceType} onValueChange={handleServiceTypeChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select profession" />
                   </SelectTrigger>
                   <SelectContent>
-                    {skills.map((skill) => (
-                      <SelectItem key={skill} value={skill}>
-                        {skill}
+                    {serviceTypes.map((service) => (
+                      <SelectItem key={service} value={service}>
+                        {service}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="area">Service Area *</Label>
+                <Input
+                  id="area"
+                  name="area"
+                  value={formData.area}
+                  onChange={handleInputChange}
+                  placeholder="Enter the worker's service location"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">Service Cost *</Label>
+                <Input
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  placeholder="Enter the worker's work wage"
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio/Description</Label>
                 <Textarea
@@ -158,6 +198,19 @@ const WorkerRegistration = () => {
                   onChange={handleInputChange}
                   placeholder="Enter a brief description about the worker's experience and expertise"
                   className="min-h-32"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password *</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Enter a secure password"
+                  required
                 />
               </div>
             </div>
@@ -178,7 +231,8 @@ const WorkerRegistration = () => {
 };
 
 export default WorkerRegistration;
-const skills: SkillType[] = [
+
+const serviceTypes = [
   "Plumber",
   "Electrician",
   "Carpenter",

@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { HardHat } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const About = () => {
   return (

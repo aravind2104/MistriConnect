@@ -21,6 +21,7 @@ const SetUnavailability: React.FC = () => {
           setUnavailability(response.data.availability);
         }
       } catch (error) {
+        console.error("Error fetching profile data:", error);
         toast.error("Failed to fetch profile data.");
       }
     };
@@ -45,6 +46,7 @@ const SetUnavailability: React.FC = () => {
       toast.success(response.data.message);
       setDate("");
     } catch (error) {
+      console.error("Error updating unavailability:", error);
       toast.error("Error updating unavailability.");
     }
   };

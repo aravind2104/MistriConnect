@@ -6,7 +6,6 @@ import {
   Clock,
   DollarSign,
   FileText,
-  MessageSquare,
   Star,
   UserCircle,
   X,
@@ -15,7 +14,7 @@ import {
   Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -116,6 +115,7 @@ const WorkerDashboard = () => {
       ));
       toast.success("Job accepted successfully");
     } catch (error) {
+      console.error(error);
       toast.error("Failed to accept job");
     }
   };
@@ -126,6 +126,7 @@ const WorkerDashboard = () => {
       setPendingJobs(pendingJobs.filter(job => job._id !== jobId));
       toast.success("Job rejected successfully");
     } catch (error) {
+      console.error(error);
       toast.error("Failed to reject job");
     }
   };
@@ -140,6 +141,7 @@ const WorkerDashboard = () => {
           : "You're now available for new jobs"
       );
     } catch (error) {
+      console.error(error);
       toast.error("Failed to update availability");
     }
   };

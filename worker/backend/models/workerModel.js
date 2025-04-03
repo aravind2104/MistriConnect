@@ -8,12 +8,13 @@ const workerSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true },
     serviceType: { type: String, required: true },
     area: { type: String, required: true },
-
     // Availability - Array of booked dates & slots
+    price: { type: Number, required: true },
     availability: [{
         date: { type: String, required: true },  // Format: YYYY-MM-DD
         slot: { type: String, enum: ["forenoon", "afternoon"], required: true }
     }],
+
 
     earnings: [{
         month: String,  // Example: "March 2025"
