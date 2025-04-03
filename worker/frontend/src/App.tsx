@@ -19,6 +19,8 @@ import EarningsPage from "./pages/EarningsPage.tsx";
 import SetAvailability from "./pages/SetAvailbaility.tsx";
 import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +40,8 @@ const App = () => (
             <Route path="/" element={<Layout><RedirectToDashboard /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/signup" element={<Layout><Signup /></Layout>} />
-
+            <Route path="/forgot-password" element={<Layout><ForgotPassword/></Layout>} />
+            <Route path="/reset-password/:token" element={<Layout><ResetPassword/></Layout>} />
             <Route element={<ProtectedRoute />}>
               <Route path="/worker/profile" element={<Layout><WorkerProfile /></Layout>} />
               <Route path="/worker/dashboard" element={<Layout><WorkerDashboard /></Layout>} />

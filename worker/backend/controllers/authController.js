@@ -2,6 +2,8 @@ import Worker from '../models/workerModel.js';
 import bcrypt from 'bcryptjs';
 import generateTokenAndSetCookie from '../utils/generateTokenAndSetCookie.js';
 
+import jwt from 'jsonwebtoken'
+import { transporter } from '../transporter/transporter.js';
 // Register Worker
 export const registerWorker = async (req, res) => {
     const { name,username, email, password, phoneNumber, serviceType, area } = req.body;
@@ -102,3 +104,71 @@ export const updateWorkerProfile = async (req, res) => {
         res.status(500).json({ message: 'Server error while updating profile' });
     }
 };
+
+export const forgotPassword=async (req,res)=>{
+
+    try{
+        console.log(process.env.MONGO_URI)
+        const {email}=req.body;
+
+        const user = await Worker.findOne({email})
+        
+        if(!user){
+            return res.status(400).json({message:"User not found"})
+        }
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        const resetLink = `http://localhost:5173/reset-password/${token}`
+
+        const info = await transporter.sendMail({
+            from: '"Mistri Connect" <chrisscharls9@gmail.com>', // sender address
+            to: `${email}`, // list of receivers
+            subject: "Reset Password for Mistri Connect", // Subject line
+            text: "Click the below link to reset you password", // plain text body
+            html: `Click <a href="${resetLink}">here</a>`
+        });
+        
+        res.status(200).json({message:"Reset link sent successfully"})
+    }
+    catch(error){
+        res.status(500).json({message:"Error in sending reset link"})
+        console.log("Error in sending reset link",error)
+    }
+
+}
+
+export const resetPassword = async (req,res)=>{
+    try{
+
+        const {token,password}=req.body
+        if(!token){
+            console.log("Token not found")
+            return res.status(400).json({message:"Token not found"})
+        }
+
+        const decoded = jwt.verify(token,process.env.JWT_SECRET)
+        if(!decoded){
+            console.log("Invalid token")
+            return res.status(400).json({message:"Invalid token"})
+        }
+
+        const workerId=decoded.id;
+
+        const worker = await Worker.findById(workerId)
+        if(!worker){
+            console.log("Worker not found")
+            return res.status(400).json({message:"Worker not found"})
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        worker.password=hashedPassword;
+        await worker.save();
+
+        return res.status(200).json({message:"Password changed successfully"})
+    }
+    catch(error){
+        console.log("Error in resetting",error)
+        return res.status(400).json({message:"Error in resetting password"})
+    }
+    
+}

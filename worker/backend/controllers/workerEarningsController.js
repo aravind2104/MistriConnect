@@ -52,7 +52,7 @@ export const getJobsForMonth = async (req, res) => {
 
 export const getAllEarnings = async (req, res) => {
     try {
-        console.log("Started")
+     
         const workerId = req.worker?.id;
         if (!workerId) {
             return res.status(401).json({ message: "Unauthorized: Worker ID missing." });
@@ -61,7 +61,7 @@ export const getAllEarnings = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(workerId)) {
             return res.status(400).json({ message: "Invalid worker ID." });
         }
-        console.log("sdfs")
+      
         const earnings = await Earnings.find({ workerId: new mongoose.Types.ObjectId(workerId) });
 
   
