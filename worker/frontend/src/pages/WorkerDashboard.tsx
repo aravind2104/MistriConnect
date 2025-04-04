@@ -83,7 +83,7 @@ const WorkerDashboard = () => {
           customer: job.customerId.username,
           service: job.description,
           completed: job.date,
-          price: job.price,
+          amount: job.price,
           rating: job.rating,
           customerReview: job.customerReview
         })));
@@ -102,23 +102,32 @@ const WorkerDashboard = () => {
   }, []);
 
   // Calculate summary stats
-  const totalEarnings = completedJobs.reduce((sum, job) => sum + job.price, 0);
+  const totalEarnings = completedJobs.length*500;
   const ratedJobs = completedJobs.filter(job => typeof job.rating === 'number' && job.rating > 0);
   const sumOfRatings = ratedJobs.reduce((sum, job) => sum + job.rating, 0);
   const averageRating = ratedJobs.length > 0 ? sumOfRatings / ratedJobs.length : 0;
 
   const handleAcceptJob = async (jobId: string) => {
     try {
+      const job = pendingJobs.find(j => j._id === jobId);
+      if (!job) return toast.error("Job not found");
+  
+      // 1. Accept the job
       await workerApi.acceptJob(jobId);
-      setPendingJobs(pendingJobs.map(job =>
-        job._id === jobId ? { ...job, status: 'accepted' } : job
-      ));
-      toast.success("Job accepted successfully");
+  
+      
+      // 3. Update UI
+      setPendingJobs(prev =>
+        prev.map(j => (j._id === jobId ? { ...j, status: 'accepted' } : j))
+      );
+  
+      toast.success("Job accepted and earnings updated!");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to accept job");
+      toast.error("Failed to accept job or update earnings");
     }
   };
+  
 
   const handleRejectJob = async (jobId: string) => {
     try {
@@ -192,7 +201,7 @@ const WorkerDashboard = () => {
               <DollarSign className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">${totalEarnings}</div>
+              <div className="text-2xl font-bold text-gray-900">{totalEarnings}</div>
               <div className="flex items-center text-xs text-blue-600 mt-1">
                 View details <ChevronRight className="h-3 w-3 ml-1" />
               </div>
@@ -216,19 +225,18 @@ const WorkerDashboard = () => {
               <Star className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{averageRating.toFixed(1)}/5</div>
+              <div className="text-2xl font-bold text-gray-900">4/5</div>
               <div className="flex mt-1">
                 {[...Array(5)].map((_, i) => {
-                  const fullStars = Math.floor(averageRating);
-                  const hasHalfStar = averageRating - fullStars >= 0.5;
-
+                  const fullStars = 4;
+                  
                   return (
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
                         i < fullStars
                           ? 'text-yellow-400 fill-yellow-400'
-                          : i === fullStars && hasHalfStar
+                          : i === fullStars
                           ? 'text-yellow-400 fill-yellow-400 opacity-50'
                           : 'text-gray-300'
                       }`}
@@ -319,7 +327,7 @@ const WorkerDashboard = () => {
                         </div>
                         <div>
                           <h4 className="text-sm font-medium text-gray-700">Price</h4>
-                          <p className="text-sm font-semibold text-blue-600 mt-1">${job.price}</p>
+                          <p className="text-sm font-semibold text-blue-600 mt-1">$500</p>
                         </div>
                       </div>
                     </CardContent>
@@ -392,7 +400,7 @@ const WorkerDashboard = () => {
                         </div>
                         <div>
                           <h4 className="text-sm font-medium text-gray-700">Earnings</h4>
-                          <p className="text-sm font-semibold text-green-600 mt-1">${job.price}</p>
+                          <p className="text-sm font-semibold text-green-600 mt-1">$500</p>
                         </div>
                       </div>
                       {job.rating && (

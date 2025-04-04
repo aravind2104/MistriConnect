@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import CustomerProfile from "./pages/Profile";
 import { createContext, useState } from "react";
 import { ToastProviderCompat } from "@/hooks/use-toast-compat";
 import { AuthProvider } from "./context/AuthContext";
@@ -44,6 +45,7 @@ const App = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="*" element={<NotFound />} />
+                <Route path="/profile" element={<CustomerProfile />} />
               </Routes>
               </AuthProvider>
             

@@ -8,7 +8,7 @@ export interface Booking {
   Phone: string;
   location: string;
   price: number;
-  status: "pending" | "ongoing" | "completed" | "cancelled";
+  status: "pending" | "accepted" | "completed" | "rejected";
   rating?: number;
   updatedAt?: string;
 }

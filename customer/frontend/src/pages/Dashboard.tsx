@@ -7,7 +7,7 @@ import { MainLayout } from "@/components/MainLayout";
 import { BookingCard } from "@/components/BookingCard";
 import {getBookings} from "./custAPI";
 import { Booking } from "@/types/types";
-
+import axios from "axios";
 const Dashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   
@@ -23,11 +23,30 @@ const Dashboard = () => {
   useEffect(() => {
     filterBookings();
   }, []);
-  const handleCancelBooking = (_id: string) => {
-    
-    toast("Your booking has been cancelled successfully");
-  };
+  const handleCancelBooking = async(_id: string) => {
+    try {
+      const response = await axios.put(`http://localhost:8001/customer/deleteBooking/${_id}`,
+        { withCredentials: true } // Include credentials if needed
+      ); // or DELETE if that's what your API expects
   
+      if (response.status === 200) {
+        toast.success("Your booking has been cancelled successfully");
+  
+        // Optionally update the UI:
+        // e.g., remove from state:
+        // setBookings(prev => prev.filter(booking => booking._id !== _id));
+      } else {
+        toast.error("Failed to cancel the booking. Try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while cancelling the booking.");
+    }
+  };
+  const total = bookings.length;
+  const ongoing = bookings.filter(b => b.status === "accepted").length;
+  const cancelled = bookings.filter(b => b.status === "rejected").length;
+
   return (
     <MainLayout>
       <div className="container mx-auto p-4">
@@ -43,7 +62,7 @@ const Dashboard = () => {
           <h2 className="text-xl font-semibold mb-4">Ongoing Bookings</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {bookings.length > 0 ? (
-              bookings.map(booking => (
+              bookings.filter(booking => booking.status === "accepted" || booking.status === "pending").map(booking => (
                 <BookingCard 
                   key={booking._id}
                   booking={booking}
@@ -74,76 +93,36 @@ const Dashboard = () => {
         
         {/* Quick Stats */}
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Total Bookings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{bookings.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Completed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{bookings.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Ongoing</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{bookings.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Cancelled</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{bookings.length}</p>
-            </CardContent>
-          </Card>
-        </section>
-        
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-gray-500">Total Bookings</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p className="text-2xl font-bold">{total}</p>
+    </CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-gray-500">Ongoing</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p className="text-2xl font-bold">{ongoing}</p>
+    </CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-gray-500">Cancelled</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p className="text-2xl font-bold">{cancelled}</p>
+    </CardContent>
+  </Card>
+</section>
+
         {/* Quick Access */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Quick Access</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Link to="/booking-history" className="w-full">
-              <Card className="hover:shadow-md transition-shadow h-full">
-                <CardContent className="p-6 flex flex-col items-center justify-center">
-                  <span className="text-2xl mb-2">📋</span>
-                  <p className="font-medium">Booking History</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link to="/favorites" className="w-full">
-              <Card className="hover:shadow-md transition-shadow h-full">
-                <CardContent className="p-6 flex flex-col items-center justify-center">
-                  <span className="text-2xl mb-2">⭐</span>
-                  <p className="font-medium">Favorite Handymen</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link to="/profile" className="w-full">
-              <Card className="hover:shadow-md transition-shadow h-full">
-                <CardContent className="p-6 flex flex-col items-center justify-center">
-                  <span className="text-2xl mb-2">👤</span>
-                  <p className="font-medium">My Profile</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-          </div>
-        </section>
+
       </div>
     </MainLayout>
   );

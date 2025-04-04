@@ -93,73 +93,26 @@ export const getJobRequestById = async (req, res) => {
 // @route   PUT /api/job-requests/:id/accept
 // @access  Private (Worker only)
 export const acceptJobRequest = async (req, res) => {
+    const jobId = req.params.id;
+
     try {
-        const jobRequest = await JobRequest.findById(req.params.id);
-        console.log("Job Request:", jobRequest);
-        if (!jobRequest || jobRequest.workerId.toString() !== req.worker.id) {
-            return res.status(404).json({ message: "Job request not found or unauthorized" });
+        const job = await JobRequest.findById(jobId);
+        if (!job) return res.status(404).json({ message: "Job not found" });
+
+        if (job.status !== 'pending') {
+            return res.status(400).json({ message: "Job already accepted or completed" });
         }
 
-        if (jobRequest.status !== "pending") {
-            return res.status(400).json({ message: "Job request is not pending" });
-        }
+        job.status = 'accepted';
+        await job.save();
 
-        // Extract job details
-        const jobDate = jobRequest.date; // Already stored in "YYYY-MM-DD" format
-        const slot = jobRequest.slot; // Either "forenoon" or "afternoon"
-
-        // Fetch worker details
-        const worker = await Worker.findById(req.worker.id);
-        if (!worker) {
-            return res.status(404).json({ message: "Worker not found" });
-        }
-
-        // Check if worker is already booked for the same slot
-        const isAlreadyBooked = worker.availability.some(
-            (entry) => entry.date === jobDate && entry.slot === slot
-        );
-
-        if (isAlreadyBooked) {
-            return res.status(400).json({ message: "Worker is already booked for this slot!" });
-        }
-
-        // Mark job as accepted
-        jobRequest.status = "accepted";
-        await jobRequest.save();
-
-        // Add job slot to worker availability
-        worker.availability.push({ date: jobDate, slot });
-        await worker.save();
-
-        // Add job to earnings
-        const monthYear = new Date(jobDate).toLocaleString("default", { month: "long", year: "numeric" });
-        let earnings = await Earnings.findOne({ workerId: req.worker.id, month: monthYear });
-
-        if (!earnings) {
-            earnings = new Earnings({
-                workerId: req.worker.id,
-                month: monthYear,
-                totalEarned: jobRequest.price,
-                jobs: [{ jobId: jobRequest._id, amount: jobRequest.price }]
-            });
-        } else {
-            earnings.totalEarned += jobRequest.price;
-            earnings.jobs.push({ jobId: jobRequest._id, amount: jobRequest.price });
-        }
-
-        await earnings.save();
-
-        res.status(200).json({
-            message: "Job request accepted and added to earnings",
-            jobRequest,
-            updatedAvailability: worker.availability
-        });
+        res.status(200).json({ message: "Job accepted and earnings updated" });
 
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+        console.error(error);
+        res.status(500).json({ message: "Something went wrong" });
     }
 };
-
 
 // @desc    Reject a job request
 // @route   PUT /api/job-requests/:id/reject

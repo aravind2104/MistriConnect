@@ -1,12 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MistriLogo } from "@/components/MistriLogo";
 
@@ -33,7 +27,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const navigationItems = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Find Services", path: "/search" },
-    { name: "Bookings", path: "/booking-history" },
+    { name: "Profile", path: "/profile" },
   ];
 
   return (

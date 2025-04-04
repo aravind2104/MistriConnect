@@ -53,7 +53,8 @@ export const HandymanCard = ({ handyman }: HandymanCardProps) => {
       description: bookingDetails.description,
       Area: bookingDetails.address,
       date: bookingDetails.date,
-      slot: bookingDetails.time, // Slot replaces 'time' as per backend
+      slot: bookingDetails.time,
+      price: handyman.price,
     };
   
     try {
