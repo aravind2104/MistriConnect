@@ -25,7 +25,6 @@
 
 ## 🛠️ Setup Instructions
 
-1. Clone the repository:
    ```bash
    git clone https://github.com/aravind2104/MistriConnect.git
    cd MistriConnect
