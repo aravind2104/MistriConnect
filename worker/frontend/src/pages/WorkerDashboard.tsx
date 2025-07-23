@@ -103,10 +103,6 @@ const WorkerDashboard = () => {
 
   // Calculate summary stats
   const totalEarnings = completedJobs.length*500;
-  const ratedJobs = completedJobs.filter(job => typeof job.rating === 'number' && job.rating > 0);
-  const sumOfRatings = ratedJobs.reduce((sum, job) => sum + job.rating, 0);
-  const averageRating = ratedJobs.length > 0 ? sumOfRatings / ratedJobs.length : 0;
-
   const handleAcceptJob = async (jobId: string) => {
     try {
       const job = pendingJobs.find(j => j._id === jobId);

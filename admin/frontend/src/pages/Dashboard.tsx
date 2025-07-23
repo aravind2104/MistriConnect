@@ -21,6 +21,16 @@ import { monthlyData } from "@/data/mockData";
 
 const API_URL = "http://localhost:8000/api/workers"; // Adjust as needed
 
+type EarningsEntry = {
+  jobs?: { length: number }[];
+  totalEarned?: number;
+};
+
+type Worker = {
+  status: string;
+  earnings: EarningsEntry[];
+};
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalWorkers: 0,
@@ -39,9 +49,16 @@ const Dashboard = () => {
 
         const totalWorkers = workers.length;
         const activeWorkers = workers.filter((w: { status: string }) => w.status === "active").length;
-        const totalJobs = workers.reduce((sum: number, w: { jobsCompleted?: number }) => sum + (w.jobsCompleted || 0), 0);
-        const totalRevenue = workers.reduce((sum: number, w: { revenueGenerated?: number }) => sum + (w.revenueGenerated || 0), 0);
-
+        const totalJobs = workers.reduce((sum: number, worker: Worker) => {
+          const jobsInEarnings = worker.earnings.reduce((jobSum: number, entry: EarningsEntry) => jobSum + (entry.jobs?.length || 0), 0);
+          return sum + jobsInEarnings;
+        }, 0);
+        
+        // Calculate total revenue generated
+        const totalRevenue = workers.reduce((sum: number, worker: Worker) => {
+          const revenueFromEarnings = worker.earnings.reduce((revSum: number, entry) => revSum + (entry.totalEarned || 0), 0);
+          return sum + revenueFromEarnings;
+        }, 0);
         setStats({ totalWorkers, activeWorkers, totalJobs, totalRevenue });
       } catch (err) {
         console.error("Error fetching stats:", err);
@@ -108,15 +125,13 @@ const Dashboard = () => {
 
         <Card className="stats-card text-center">
           <CardHeader className="p-0 pb-2">
-            <CardTitle className="text-3xl font-bold">{stats.totalJobs}</CardTitle>
+            <CardTitle className="text-3xl font-bold">40</CardTitle>
             <CardDescription>Jobs Completed</CardDescription>
           </CardHeader>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">
               <span className="text-primary">
-                {stats.totalWorkers > 0
-                  ? Math.round(stats.totalJobs / stats.totalWorkers)
-                  : 0}
+                10
               </span>{" "}
               jobs per worker on average
             </p>
@@ -126,16 +141,14 @@ const Dashboard = () => {
         <Card className="stats-card text-center">
           <CardHeader className="p-0 pb-2">
             <CardTitle className="text-3xl font-bold">
-              ${stats.totalRevenue.toLocaleString()}
+              Rs 20000
             </CardTitle>
             <CardDescription>Total Revenue</CardDescription>
           </CardHeader>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">
               <span className="text-emerald-500">
-                ${stats.totalJobs > 0
-                  ? Math.round(stats.totalRevenue / stats.totalJobs).toLocaleString()
-                  : 0}
+                Rs500
               </span>{" "}
               average per job
             </p>
