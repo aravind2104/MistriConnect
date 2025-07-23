@@ -1,90 +1,99 @@
+// src/pages/Login.tsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { CardContent} from '@/components/ui/card';
+import { useAuth } from '@/context/AuthContext';
+import { HardHat } from 'lucide-react';
 
 const Login = () => {
-const [email, setEmail] = useState('');
-const [password, setPassword] = useState('');
-const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { login, isLoading } = useAuth();
 
-const handleSubmit = async (e: React.FormEvent) => {
-e.preventDefault();
-setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await login(email, password);
+  };
 
-// Simulate login process - in a real app, this would be connected to an API
-setTimeout(() => {
-toast.success("Redirecting to your dashboard...");
-setIsLoading(false);
-// In a real app, redirect to dashboard
-window.location.href = '/worker/dashboard';
-}, 1500);
-};
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="container mx-auto px-6 py-12">
+        <div className="flex flex-col items-center justify-center">
+          {/* Logo/Header Section */}
+          <div className="flex items-center mb-8">
+            <HardHat className="h-10 w-10 text-blue-600 mr-3" />
+            <span className="text-2xl font-bold text-blue-600">MistriConnect</span>
+          </div>
 
-return (
-<div className="min-h-[80vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-gray-50">
-<div className="w-full max-w-md">
-<div className="text-center mb-8">
-<h2 className="text-3xl font-bold text-gray-900">Worker Login</h2>
-<p className="mt-2 text-sm text-gray-600">
-Sign in to your MistriConnect account
-</p>
-</div>
+          {/* Card Container with Shadow */}
+          <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Blue Gradient Card Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4">
+              <h2 className="text-2xl font-bold text-white">Worker Login</h2>
+              <p className="text-blue-100">Sign in to your professional account</p>
+            </div>
 
-<Card>
-<CardHeader>
-<CardTitle>Login</CardTitle>
-<CardDescription>Enter your credentials below</CardDescription>
-</CardHeader>
-<CardContent>
-<form onSubmit={handleSubmit} className="space-y-4">
-<div className="space-y-2">
-<Label htmlFor="email">Email</Label>
-<Input
-id="email"
-type="email"
-placeholder="your@email.com"
-value={email}
-onChange={(e) => setEmail(e.target.value)}
-required
-/>
-</div>
-<div className="space-y-2">
-<Label htmlFor="password">Password</Label>
-<Input
-id="password"
-type="password"
-placeholder="••••••••"
-value={password}
-onChange={(e) => setPassword(e.target.value)}
-required
-/>
-</div>
-<div className="text-right text-sm">
-<a href="#" className="text-tool-blue hover:underline">
-Forgot password?
-</a>
-</div>
-<Button type="submit" className="w-full" disabled={isLoading}>
-{isLoading ? "Signing in..." : "Sign in"}
-</Button>
-</form>
-</CardContent>
-<CardFooter className="justify-center border-t p-4">
-<p className="text-sm text-gray-600">
-Don't have an account?{' '}
-<Link to="/signup" className="text-tool-blue font-medium hover:underline">
-Sign Up Here
-</Link>
-</p>
-</CardFooter>
-</Card>
-</div>
-</div>
-);
+            {/* Card Content */}
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-gray-700">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="focus-visible:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label htmlFor="password" className="text-gray-700">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="focus-visible:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <Label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                      Remember me
+                    </Label>
+                  </div>
+                  <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                    Forgot password?
+                  </a>
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-md"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+            </CardContent>
+
+    
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Login;

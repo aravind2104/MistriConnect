@@ -1,7 +1,7 @@
 import { Toaster } from "sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Home from "./pages/Index.tsx";
@@ -12,24 +12,50 @@ import NotFound from "./pages/NotFound.tsx";
 
 // Layout components
 import Layout from "./components/layout/Layout";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import { AuthProvider, useAuth } from "./context/AuthContext.tsx";
+import EarningsPage from "./pages/EarningsPage.tsx";
+import SetAvailability from "./pages/SetAvailbaility.tsx";
+import About from "./pages/About.tsx";
+import Contact from "./pages/Contact.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 
 const queryClient = new QueryClient();
 
+const RedirectToDashboard = () => {
+  const { user } = useAuth(); // Get user authentication state
+
+  return user ? <Navigate to="/worker/dashboard" replace /> : <Home />;
+};
+
 const App = () => (
-<QueryClientProvider client={queryClient}>
-<TooltipProvider>
-<Toaster />
-<BrowserRouter>
-<Routes>
-<Route path="/" element={<Layout><Home /></Layout>} />
-<Route path="/login" element={<Layout><Login /></Layout>} />
-<Route path="/worker/profile" element={<Layout><WorkerProfile /></Layout>} />
-<Route path="/worker/dashboard" element={<Layout><WorkerDashboard /></Layout>} />
-<Route path="*" element={<Layout><NotFound /></Layout>} />
-</Routes>
-</BrowserRouter>
-</TooltipProvider>
-</QueryClientProvider>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Layout><RedirectToDashboard /></Layout>} />
+            <Route path="/login" element={<Layout><Login /></Layout>} />
+            <Route path="/forgot-password" element={<Layout><ForgotPassword/></Layout>} />
+            <Route path="/reset-password/:token" element={<Layout><ResetPassword/></Layout>} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/worker/profile" element={<Layout><WorkerProfile /></Layout>} />
+              <Route path="/worker/dashboard" element={<Layout><WorkerDashboard /></Layout>} />
+              <Route path="/worker/earnings" element={<Layout><EarningsPage /></Layout>} />
+              <Route path="/worker/setavailability" element={<Layout><SetAvailability /></Layout>} />
+              <Route path="/about" element={<Layout><About/></Layout>} />
+              <Route path="/contact" element={<Layout><Contact/></Layout>} />
+            </Route>
+
+            <Route path="*" element={<Layout><NotFound /></Layout>} />
+          </Routes>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;

@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken';
 import Worker from '../models/workerModel.js';
 
 const protectRoute = async (req, res, next) => {
-    const token = req.cookies.jwt;
-
+    const token = req.cookies.jwt_worker; // Access the token from cookies
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized. No token provided.' });
     }

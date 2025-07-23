@@ -7,8 +7,10 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import CustomerProfile from "./pages/Profile";
 import { createContext, useState } from "react";
 import { ToastProviderCompat } from "@/hooks/use-toast-compat";
+import { AuthProvider } from "./context/AuthContext";
 
 // Create a context for auth state management
 export const AuthContext = createContext<{
@@ -31,11 +33,11 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+       <BrowserRouter>
         <TooltipProvider>
           <ToastProviderCompat>
             <Toaster />
-            <BrowserRouter>
+           <AuthProvider>
               <Routes>
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
@@ -43,11 +45,13 @@ const App = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="*" element={<NotFound />} />
+                <Route path="/profile" element={<CustomerProfile />} />
               </Routes>
-            </BrowserRouter>
+              </AuthProvider>
+            
           </ToastProviderCompat>
         </TooltipProvider>
-      </AuthContext.Provider>
+        </BrowserRouter>
     </QueryClientProvider>
   );
 };

@@ -11,11 +11,6 @@ Home
 </Link>
 </div>
 <div className="px-5 py-2">
-<Link to="/browse" className="text-base text-gray-500 hover:text-gray-900">
-Browse Handymen
-</Link>
-</div>
-<div className="px-5 py-2">
 <Link to="/about" className="text-base text-gray-500 hover:text-gray-900">
 About Us
 </Link>
